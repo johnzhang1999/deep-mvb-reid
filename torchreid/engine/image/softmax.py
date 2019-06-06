@@ -109,10 +109,10 @@ class ImageSoftmaxEngine(engine.Engine):
             losses.update(loss.item(), pids.size(0))
             accs = metrics.accuracy(outputs, pids)
             rank_1.update(accs[0].item())
-            rank_2.update(accs[0].item())
-            rank_3.update(accs[0].item())
-            rank_4.update(accs[0].item())
-            rank_5.update(accs[0].item())
+            rank_2.update(accs[1].item())
+            rank_3.update(accs[2].item())
+            rank_4.update(accs[3].item())
+            rank_5.update(accs[4].item())
 
 
             if (batch_idx+1) % print_freq == 0:
