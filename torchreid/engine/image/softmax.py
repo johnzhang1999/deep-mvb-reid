@@ -74,7 +74,11 @@ class ImageSoftmaxEngine(engine.Engine):
 
     def train(self, epoch, max_epoch, trainloader, fixbase_epoch=0, open_layers=None, print_freq=10):
         losses = AverageMeter()
-        accs = AverageMeter()
+        rank_1 = AverageMeter()
+        rank_2 = AverageMeter()
+        rank_3 = AverageMeter()
+        rank_4 = AverageMeter()
+        rank_5 = AverageMeter()
         batch_time = AverageMeter()
         data_time = AverageMeter()
 
@@ -93,7 +97,7 @@ class ImageSoftmaxEngine(engine.Engine):
             if self.use_gpu:
                 imgs = imgs.cuda()
                 pids = pids.cuda()
-            
+             
             self.optimizer.zero_grad()
             outputs = self.model(imgs)
             loss = self._compute_loss(self.criterion, outputs, pids)
@@ -103,7 +107,13 @@ class ImageSoftmaxEngine(engine.Engine):
             batch_time.update(time.time() - end)
 
             losses.update(loss.item(), pids.size(0))
-            accs.update(metrics.accuracy(outputs, pids)[0].item())
+            accs = metrics.accuracy(outputs, pids)
+            rank_1.update(accs[0].item())
+            rank_2.update(accs[0].item())
+            rank_3.update(accs[0].item())
+            rank_4.update(accs[0].item())
+            rank_5.update(accs[0].item())
+
 
             if (batch_idx+1) % print_freq == 0:
                 # estimate remaining time
@@ -114,14 +124,22 @@ class ImageSoftmaxEngine(engine.Engine):
                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                       'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'Acc {acc.val:.2f} ({acc.avg:.2f})\t'
+                      'Rank-1 {r1.val:.2f} ({r1.avg:.2f})\t'
+                      'Rank-2 {r2.val:.2f} ({r2.avg:.2f})\t'
+                      'Rank-3 {r3.val:.2f} ({r3.avg:.2f})\t'
+                      'Rank-4 {r4.val:.2f} ({r4.avg:.2f})\t'
+                      'Rank-5 {r5.val:.2f} ({r5.avg:.2f})\t'
                       'Lr {lr:.6f}\t'
                       'Eta {eta}'.format(
                       epoch+1, max_epoch, batch_idx+1, len(trainloader),
                       batch_time=batch_time,
                       data_time=data_time,
                       loss=losses,
-                      acc=accs,
+                      r1=rank_1,
+                      r2=rank_2,
+                      r3=rank_3,
+                      r4=rank_4,
+                      r5=rank_5,
                       lr=self.optimizer.param_groups[0]['lr'],
                       eta=eta_str
                     )
