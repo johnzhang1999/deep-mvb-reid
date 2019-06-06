@@ -26,17 +26,17 @@ class Market1501(ImageDataset):
         - images: 12936 (train) + 3368 (query) + 15913 (gallery).
     """
     _junk_pids = [0, -1]
-    dataset_dir = 'market1501'
+    dataset_dir = 'MVB_train'
     dataset_url = 'http://188.138.127.15:81/Datasets/Market-1501-v15.09.15.zip'
 
     def __init__(self, root='', market1501_500k=False, **kwargs):
-        self.root = osp.abspath(osp.expanduser(root))
+        self.root = root
         self.dataset_dir = osp.join(self.root, self.dataset_dir)
         # self.download_dataset(self.dataset_dir, self.dataset_url)
     
         # allow alternative directory structure
         self.data_dir = self.dataset_dir
-        data_dir = osp.join(self.data_dir, 'Image')
+        data_dir = osp.join(self.data_dir)
         if osp.isdir(data_dir):
             self.data_dir = data_dir
         else:
@@ -70,11 +70,20 @@ class Market1501(ImageDataset):
 
     def process_dir(self, dir_path, relabel=False):
         ret = []
-        # pids = set()
+        real_ret = []
+        pid_container = set()
         with open(osp.join(dir_path)) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
                 filename,pid,cam = row[0],row[1],row[2]
-                # pids.add(pid)
-                ret.append((filename,pid,cam))
-        return ret
+                pid_container.add(pid)
+                ret.append(('/root/mvb/data/MVB_train/Image/'+filename,pid,int(cam)))
+        pid2label = {pid:label for label, pid in enumerate(pid_container)}
+        # print(pid2label)
+        if relabel:
+            for path,pid,cam in ret:
+                real_ret.append((path,pid2label[pid],cam))
+        else:
+            for path,pid,cam in ret:
+                real_ret.append((path,int(pid),cam))
+        return real_ret

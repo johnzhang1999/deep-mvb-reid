@@ -41,6 +41,7 @@ class Dataset(object):
         self.mode = mode
         self.combineall = combineall
         self.verbose = verbose
+        # print(self.train)
 
         self.num_train_pids = self.get_num_pids(self.train)
         self.num_train_cams = self.get_num_cams(self.train)
