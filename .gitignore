@@ -129,6 +129,7 @@ log/
 saved-models/
 model-zoo/
 debug.py
+**/model.pth.tar-*
 
 # Cython eval code
 *.c
