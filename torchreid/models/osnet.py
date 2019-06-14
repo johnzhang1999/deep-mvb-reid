@@ -239,5 +239,5 @@ def osnet(num_classes, loss='softmax', pretrained=False, **kwargs):
         dropout_p=None,
         **kwargs
     )
-    summary(model,input_size=(3,256,256))
+    # summary(model,input_size=(3,256,256))
     return model

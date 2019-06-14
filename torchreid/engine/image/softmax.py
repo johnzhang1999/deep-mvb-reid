@@ -13,6 +13,8 @@ from torchreid.losses import CrossEntropyLoss
 from torchreid.utils import AverageMeter, open_specified_layers, open_all_layers
 from torchreid import metrics
 
+from tensorboardX import SummaryWriter
+
 
 class ImageSoftmaxEngine(engine.Engine):
     r"""Softmax-loss engine for image-reid.
@@ -81,6 +83,7 @@ class ImageSoftmaxEngine(engine.Engine):
         rank_5 = AverageMeter()
         batch_time = AverageMeter()
         data_time = AverageMeter()
+        writer = SummaryWriter()
 
         self.model.train()
         if (epoch+1)<=fixbase_epoch and open_layers is not None:
@@ -114,6 +117,13 @@ class ImageSoftmaxEngine(engine.Engine):
             rank_4.update(accs[3].item())
             rank_5.update(accs[4].item())
 
+            # write to Tensorboard
+            for i,r in enumerate(accs):
+                writer.add_scalar('ranks/rank-'+str(i+1),r,batch_idx)
+            writer.add_scalar('loss',loss,batch_idx)
+            writer.add_scalar('lr',self.optimizer.param_groups[0]['lr'],batch_idx)
+            
+
 
             if (batch_idx+1) % print_freq == 0:
                 # estimate remaining time
@@ -144,8 +154,11 @@ class ImageSoftmaxEngine(engine.Engine):
                       eta=eta_str
                     )
                 )
+                writer.add_scalar('eta',eta_seconds,batch_idx)
             
             end = time.time()
 
         if self.scheduler is not None:
             self.scheduler.step()
+        
+        writer.close()
