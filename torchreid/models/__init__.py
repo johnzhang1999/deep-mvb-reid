@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import torch
 
 from .resnet import *
+from .osnet import *
 from .resnetmid import *
 from .senet import *
 from .densenet import *
@@ -24,6 +25,7 @@ from .mlfn import *
 
 __model_factory = {
     # image classification models
+    'osnet': osnet,
     'resnet18': resnet18,
     'resnet34': resnet34,
     'resnet50': resnet50,
