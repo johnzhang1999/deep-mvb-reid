@@ -13,8 +13,6 @@ from torchreid.losses import CrossEntropyLoss
 from torchreid.utils import AverageMeter, open_specified_layers, open_all_layers
 from torchreid import metrics
 
-from tensorboardX import SummaryWriter
-
 
 class ImageSoftmaxEngine(engine.Engine):
     r"""Softmax-loss engine for image-reid.
@@ -83,7 +81,6 @@ class ImageSoftmaxEngine(engine.Engine):
         rank_5 = AverageMeter()
         batch_time = AverageMeter()
         data_time = AverageMeter()
-        writer = SummaryWriter()
 
         self.model.train()
         if (epoch+1)<=fixbase_epoch and open_layers is not None:
@@ -95,6 +92,8 @@ class ImageSoftmaxEngine(engine.Engine):
         end = time.time()
         for batch_idx, data in enumerate(trainloader):
             data_time.update(time.time() - end)
+            num_batches = len(trainloader)
+            global_step = num_batches * epoch + batch_idx
 
             imgs, pids = self._parse_data_for_train(data)
             if self.use_gpu:
@@ -119,9 +118,18 @@ class ImageSoftmaxEngine(engine.Engine):
 
             # write to Tensorboard
             for i,r in enumerate(accs):
-                writer.add_scalar('ranks/rank-'+str(i+1),r,batch_idx)
-            writer.add_scalar('loss',loss,batch_idx)
-            writer.add_scalar('lr',self.optimizer.param_groups[0]['lr'],batch_idx)
+                self.writer.add_scalar('ranks/rank-'+str(i+1),r,global_step)
+            
+            self.writer.add_scalar('ranks-avg/rank-1',rank_1.avg,global_step)
+            self.writer.add_scalar('ranks-avg/rank-2',rank_2.avg,global_step)
+            self.writer.add_scalar('ranks-avg/rank-3',rank_3.avg,global_step)
+            self.writer.add_scalar('ranks-avg/rank-4',rank_4.avg,global_step)
+            self.writer.add_scalar('ranks-avg/rank-5',rank_5.avg,global_step)
+                
+            self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
+            self.writer.add_scalar('optim/loss-avg',losses.avg,global_step)
+
+            self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
             
 
 
@@ -154,11 +162,10 @@ class ImageSoftmaxEngine(engine.Engine):
                       eta=eta_str
                     )
                 )
-                writer.add_scalar('eta',eta_seconds,batch_idx)
+                self.writer.add_scalar('eta',eta_seconds,global_step)
             
             end = time.time()
 
         if self.scheduler is not None:
             self.scheduler.step()
         
-        writer.close()

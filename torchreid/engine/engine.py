@@ -17,6 +17,8 @@ from torchreid.utils import AverageMeter, visualize_ranked_results, save_checkpo
 from torchreid.losses import DeepSupervision
 from torchreid import metrics
 
+from tensorboardX import SummaryWriter
+
 
 class Engine(object):
     r"""A generic base Engine class for both image- and video-reid.
@@ -36,6 +38,7 @@ class Engine(object):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.use_gpu = (torch.cuda.is_available() and not use_cpu)
+        self.writer = SummaryWriter()
 
         # check attributes
         if not isinstance(self.model, nn.Module):
@@ -112,6 +115,9 @@ class Engine(object):
                     ranks=ranks
                 )
                 self._save_checkpoint(epoch, rank1, save_dir)
+            elif eval_freq>0 and (epoch+1)%eval_freq==0 and (epoch+1)!=max_epoch:
+                print('saving pre-test checkpoint...')
+                self._save_checkpoint(epoch, -1, save_dir)
 
         if max_epoch > 0:
             print('=> Final test')
@@ -131,6 +137,8 @@ class Engine(object):
         elapsed = round(time.time() - time_start)
         elapsed = str(datetime.timedelta(seconds=elapsed))
         print('Elapsed {}'.format(elapsed))
+        
+        self.writer.close()
 
     def train(self):
         r"""Performs training on source datasets for one epoch.
