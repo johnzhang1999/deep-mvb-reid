@@ -187,11 +187,11 @@ class OSNet(nn.Module):
         self.conv5 = conv1x1(512,512)
         self.gap = nn.AdaptiveAvgPool2d((1,1))
         self.fc = nn.Sequential(
-            nn.Linear(512,2048),
-            nn.BatchNorm1d(2048),
+            nn.Linear(512,512),
+            nn.BatchNorm1d(512),
             self.relu
         )
-        self.classifier = nn.Linear(2048,num_classes)
+        self.classifier = nn.Linear(512,num_classes)
         
 
     def forward(self, x):
