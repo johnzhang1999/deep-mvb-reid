@@ -26,10 +26,11 @@ args = parser.parse_args()
 
 experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
                         project_name="mvbchallenge", workspace="johnzhang1999")
-experiment.log_parameters(imagedata_kwargs(args))
-experiment.log_parameters(optimizer_kwargs(args))
-experiment.log_parameters(lr_scheduler_kwargs(args))
-experiment.log_parameters(engine_run_kwargs(args))
+# experiment.log_parameters(imagedata_kwargs(args))
+# experiment.log_parameters(optimizer_kwargs(args))
+# experiment.log_parameters(lr_scheduler_kwargs(args))
+# experiment.log_parameters(engine_run_kwargs(args))
+experiment.log_parameters(args.__dict__)
 
 
 def build_datamanager(args):
