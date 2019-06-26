@@ -14,7 +14,8 @@ from default_parser import (
 import torchreid
 from torchreid.utils import (
     Logger, set_random_seed, check_isfile, resume_from_checkpoint,
-    load_pretrained_weights, compute_model_complexity, collect_env_info
+    load_pretrained_weights, compute_model_complexity, collect_env_info,
+    change_lr_to
 )
 
 
@@ -128,6 +129,11 @@ def main():
 
     if args.resume and check_isfile(args.resume):
         args.start_epoch = resume_from_checkpoint(args.resume, model, optimizer=optimizer)
+    
+    if args.lr != optimizer.param_groups[0]['lr']:
+        old_lr = optimizer.param_groups[0]['lr']
+        change_lr_to(optimizer,args.lr)
+        print('Changed optimzer lr from {} to {}.'.format(old_lr,args.lr))
 
     print('Building {}-engine for {}-reid'.format(args.loss, args.app))
     engine = build_engine(args, datamanager, model, optimizer, scheduler)

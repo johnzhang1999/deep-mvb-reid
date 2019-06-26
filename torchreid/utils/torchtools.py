@@ -125,6 +125,9 @@ def resume_from_checkpoint(fpath, model, optimizer=None):
         print('Last rank1 = {:.1%}'.format(checkpoint['rank1']))
     return start_epoch
 
+def change_lr_to(optimizer,lr):
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
 
 def adjust_learning_rate(optimizer, base_lr, epoch, stepsize=20, gamma=0.1,
                          linear_decay=False, final_lr=0, max_epoch=100):

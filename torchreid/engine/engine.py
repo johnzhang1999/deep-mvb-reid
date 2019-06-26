@@ -304,8 +304,8 @@ class Engine(object):
         if not self.test_only:
             for r in ranks:
                 self.writer.add_scalar('eval/rank-{:<3}'.format(r),cmc[r-1],epoch)
-                self.writer.add_scalar('eval/mAP',mAP,epoch)
-            print('Results wrote to tensorboard.')
+            self.writer.add_scalar('eval/mAP',mAP,epoch)
+            print('Results written to tensorboard.')
 
         if visrank:
             visualize_ranked_results(
