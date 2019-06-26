@@ -38,6 +38,9 @@ experiment.set_name(name)
 if args.resume:
     experiment.add_tag('resume')
 experiment.log_parameters(args.__dict__)
+# asset logging is BUG-gy!
+experiment.log_asset_folder(osp.expanduser('log/'))
+experiment.log_asset_folder(osp.expanduser('runs/'))
 
 
 def build_datamanager(args):

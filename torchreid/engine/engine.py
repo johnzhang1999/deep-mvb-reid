@@ -136,8 +136,8 @@ class Engine(object):
                     self._save_checkpoint(epoch, -1, save_dir)
                     
                 # for resuming debugging below
-                # self._save_checkpoint(epoch, -1, save_dir)
-                # print('saving every checkpoint...')
+                self._save_checkpoint(epoch, -1, save_dir)
+                print('saving every checkpoint...')
 
         if max_epoch > 0:
             print('=> Final test')
