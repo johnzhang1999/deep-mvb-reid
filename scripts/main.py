@@ -18,6 +18,15 @@ from torchreid.utils import (
     change_lr_to
 )
 
+# comet.ml experiment logging
+from comet_ml import Experiment
+
+experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
+                        project_name="mvbchallenge", workspace="johnzhang1999")
+experiment.log_parameters(imagedata_kwargs)
+experiment.log_parameters(optimizer_kwargs)
+experiment.log_parameters(lr_scheduler_kwargs)
+experiment.log_parameters(engine_run_kwargs)
 
 parser = init_parser()
 args = parser.parse_args()
@@ -30,7 +39,7 @@ def build_datamanager(args):
         return torchreid.data.VideoDataManager(**videodata_kwargs(args))
 
 
-def build_engine(args, datamanager, model, optimizer, scheduler):
+def build_engine(args, datamanager, model, optimizer, scheduler, experiment=experiment):
     if args.app == 'image':
         if args.loss == 'softmax':
             engine = torchreid.engine.ImageSoftmaxEngine(
@@ -39,7 +48,8 @@ def build_engine(args, datamanager, model, optimizer, scheduler):
                 optimizer,
                 scheduler=scheduler,
                 use_cpu=args.use_cpu,
-                label_smooth=args.label_smooth
+                label_smooth=args.label_smooth,
+                experiment=experiment
             )
         else:
             engine = torchreid.engine.ImageTripletEngine(
@@ -136,7 +146,7 @@ def main():
         print('Changed optimzer lr from {} to {}.'.format(old_lr,args.lr))
 
     print('Building {}-engine for {}-reid'.format(args.loss, args.app))
-    engine = build_engine(args, datamanager, model, optimizer, scheduler)
+    engine = build_engine(args, datamanager, model, optimizer, scheduler, experiment)
 
     engine.run(**engine_run_kwargs(args))
 
