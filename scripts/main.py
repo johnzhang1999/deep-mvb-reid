@@ -27,11 +27,11 @@ args = parser.parse_args()
 if args.no_comet:
     experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
                         project_name="mvbchallenge", workspace="johnzhang1999",
-                        log_code=False, disabled=True)
+                        parse_args=False, disabled=True)
 else:
     experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
                         project_name="mvbchallenge", workspace="johnzhang1999",
-                        log_code=False)
+                        parse_args=False)
 
 name = args.arch + '_' + args.sources[0] + '_' + str(args.lr) + '_' + str(args.batch_size)
 experiment.set_name(name)

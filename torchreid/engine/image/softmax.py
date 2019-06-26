@@ -122,17 +122,18 @@ class ImageSoftmaxEngine(engine.Engine):
                 self.writer.add_scalar('ranks/rank-'+str(i+1),r,global_step)
                 self.experiment.log_metric('ranks/rank-'+str(i+1),r,step=global_step)
             
-            self.writer.add_scalar('ranks-avg/rank-1',rank_1.avg,global_step)
-            self.writer.add_scalar('ranks-avg/rank-2',rank_2.avg,global_step)
-            self.writer.add_scalar('ranks-avg/rank-3',rank_3.avg,global_step)
-            self.writer.add_scalar('ranks-avg/rank-4',rank_4.avg,global_step)
-            self.writer.add_scalar('ranks-avg/rank-5',rank_5.avg,global_step)
+            # self.writer.add_scalar('ranks-avg/rank-1',rank_1.avg,global_step)
+            # self.writer.add_scalar('ranks-avg/rank-2',rank_2.avg,global_step)
+            # self.writer.add_scalar('ranks-avg/rank-3',rank_3.avg,global_step)
+            # self.writer.add_scalar('ranks-avg/rank-4',rank_4.avg,global_step)
+            # self.writer.add_scalar('ranks-avg/rank-5',rank_5.avg,global_step)
                 
             self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
-            self.writer.add_scalar('optim/loss-avg',losses.avg,global_step)
+            # self.writer.add_scalar('optim/loss-avg',losses.avg,global_step)
             self.experiment.log_metric('optim/loss',losses.val,step=global_step)
 
             self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
+            self.experiment.log_metric('optim/lr',self.optimizer.param_groups[0]['lr'],step=global_step)
             
 
 
@@ -166,6 +167,7 @@ class ImageSoftmaxEngine(engine.Engine):
                     )
                 )
                 self.writer.add_scalar('eta',eta_seconds,global_step)
+                self.experiment.log_metric('eta',eta_seconds,step=global_step)
             
             end = time.time()
 

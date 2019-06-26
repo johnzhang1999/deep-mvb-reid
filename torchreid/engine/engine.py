@@ -85,7 +85,16 @@ class Engine(object):
         self.test_only = test_only
         if not test_only:
             tfboard_event_path = osp.join('runs/',osp.basename(osp.normpath(save_dir)))
-            self.writer = SummaryWriter(tfboard_event_path)
+
+            # avoid writing to the same event file
+            counter = 1
+            new_event_path = tfboard_event_path
+            while osp.isdir(new_event_path):
+                counter += 1
+                new_event_path = tfboard_event_path + '-' + str(counter)
+            print('Tensorboard logging path:',new_event_path)
+
+            self.writer = SummaryWriter(new_event_path)
 
         if test_only:
             self.test(
