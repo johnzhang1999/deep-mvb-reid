@@ -38,7 +38,7 @@ class Engine(object):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.use_gpu = (torch.cuda.is_available() and not use_cpu)
-        self.writer = SummaryWriter()
+        self.writer = None
 
         # check attributes
         if not isinstance(self.model, nn.Module):
@@ -80,6 +80,11 @@ class Engine(object):
                 Default is False. This is only enabled when test_only=True.
         """
         trainloader, testloader = self.datamanager.return_dataloaders()
+
+        self.test_only = test_only
+        if not test_only:
+            tfboard_event_path = osp.basename(osp.normpath(save_dir))
+            self.writer = SummaryWriter(tfboard_event_path)
 
         if test_only:
             self.test(
@@ -138,7 +143,8 @@ class Engine(object):
         elapsed = str(datetime.timedelta(seconds=elapsed))
         print('Elapsed {}'.format(elapsed))
         
-        self.writer.close()
+        if not test_only:
+            self.writer.close()
 
     def train(self):
         r"""Performs training on source datasets for one epoch.
@@ -294,6 +300,12 @@ class Engine(object):
         print('CMC curve')
         for r in ranks:
             print('Rank-{:<3}: {:.1%}'.format(r, cmc[r-1]))
+
+        if not self.test_only:
+            for r in ranks:
+                self.writer.add_scalar('eval/rank-{:<3}'.format(r),cmc[r-1],epoch)
+                self.writer.add_scalar('eval/mAP',mAP,epoch)
+            print('Results wrote to tensorboard.')
 
         if visrank:
             visualize_ranked_results(
