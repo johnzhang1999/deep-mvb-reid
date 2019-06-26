@@ -4,6 +4,7 @@ import os.path as osp
 import warnings
 import time
 
+from comet_ml import Experiment
 import torch
 import torch.nn as nn
 
@@ -18,18 +19,17 @@ from torchreid.utils import (
     change_lr_to
 )
 
+parser = init_parser()
+args = parser.parse_args()
+
 # comet.ml experiment logging
-from comet_ml import Experiment
 
 experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
                         project_name="mvbchallenge", workspace="johnzhang1999")
-experiment.log_parameters(imagedata_kwargs)
-experiment.log_parameters(optimizer_kwargs)
-experiment.log_parameters(lr_scheduler_kwargs)
-experiment.log_parameters(engine_run_kwargs)
-
-parser = init_parser()
-args = parser.parse_args()
+experiment.log_parameters(imagedata_kwargs(args))
+experiment.log_parameters(optimizer_kwargs(args))
+experiment.log_parameters(lr_scheduler_kwargs(args))
+experiment.log_parameters(engine_run_kwargs(args))
 
 
 def build_datamanager(args):

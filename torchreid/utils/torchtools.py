@@ -4,7 +4,7 @@ from __future__ import division
 
 __all__ = ['save_checkpoint', 'load_checkpoint', 'resume_from_checkpoint',
            'open_all_layers', 'open_specified_layers', 'count_num_param',
-           'load_pretrained_weights']
+           'load_pretrained_weights', 'change_lr_to']
 
 from collections import OrderedDict
 import shutil
