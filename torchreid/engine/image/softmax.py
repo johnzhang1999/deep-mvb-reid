@@ -63,8 +63,8 @@ class ImageSoftmaxEngine(engine.Engine):
     """
 
     def __init__(self, datamanager, model, optimizer, scheduler=None, use_cpu=False,
-                 label_smooth=True):
-        super(ImageSoftmaxEngine, self).__init__(datamanager, model, optimizer, scheduler, use_cpu)
+                 label_smooth=True, experiment=None):
+        super(ImageSoftmaxEngine, self).__init__(datamanager, model, optimizer, scheduler, use_cpu, experiment)
         
         self.criterion = CrossEntropyLoss(
             num_classes=self.datamanager.num_train_pids,
@@ -116,9 +116,11 @@ class ImageSoftmaxEngine(engine.Engine):
             rank_4.update(accs[3].item())
             rank_5.update(accs[4].item())
 
-            # write to Tensorboard
+            # write to Tensorboard & comet.ml
             for i,r in enumerate(accs):
+                r = float(r)
                 self.writer.add_scalar('ranks/rank-'+str(i+1),r,global_step)
+                self.experiment.log_metric('ranks/rank-'+str(i+1),r,step=global_step)
             
             self.writer.add_scalar('ranks-avg/rank-1',rank_1.avg,global_step)
             self.writer.add_scalar('ranks-avg/rank-2',rank_2.avg,global_step)
@@ -128,6 +130,7 @@ class ImageSoftmaxEngine(engine.Engine):
                 
             self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
             self.writer.add_scalar('optim/loss-avg',losses.avg,global_step)
+            self.experiment.log_metric('optim/loss',losses.val,step=global_step)
 
             self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
             

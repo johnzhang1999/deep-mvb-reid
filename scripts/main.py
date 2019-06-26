@@ -4,6 +4,7 @@ import os.path as osp
 import warnings
 import time
 
+from comet_ml import Experiment
 import torch
 import torch.nn as nn
 
@@ -18,9 +19,25 @@ from torchreid.utils import (
     change_lr_to
 )
 
-
 parser = init_parser()
 args = parser.parse_args()
+
+# comet.ml experiment logging
+
+if args.no_comet:
+    experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
+                        project_name="mvbchallenge", workspace="johnzhang1999",
+                        log_code=False, disabled=True)
+else:
+    experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
+                        project_name="mvbchallenge", workspace="johnzhang1999",
+                        log_code=False)
+
+name = args.arch + '_' + args.sources[0] + '_' + str(args.lr) + '_' + str(args.batch_size)
+experiment.set_name(name)
+if args.resume:
+    experiment.add_tag('resume')
+experiment.log_parameters(args.__dict__)
 
 
 def build_datamanager(args):
@@ -30,7 +47,7 @@ def build_datamanager(args):
         return torchreid.data.VideoDataManager(**videodata_kwargs(args))
 
 
-def build_engine(args, datamanager, model, optimizer, scheduler):
+def build_engine(args, datamanager, model, optimizer, scheduler, experiment=experiment):
     if args.app == 'image':
         if args.loss == 'softmax':
             engine = torchreid.engine.ImageSoftmaxEngine(
@@ -39,7 +56,8 @@ def build_engine(args, datamanager, model, optimizer, scheduler):
                 optimizer,
                 scheduler=scheduler,
                 use_cpu=args.use_cpu,
-                label_smooth=args.label_smooth
+                label_smooth=args.label_smooth,
+                experiment=experiment
             )
         else:
             engine = torchreid.engine.ImageTripletEngine(
@@ -130,13 +148,14 @@ def main():
     if args.resume and check_isfile(args.resume):
         args.start_epoch = resume_from_checkpoint(args.resume, model, optimizer=optimizer)
     
-    if args.lr != optimizer.param_groups[0]['lr']:
-        old_lr = optimizer.param_groups[0]['lr']
-        change_lr_to(optimizer,args.lr)
-        print('Changed optimzer lr from {} to {}.'.format(old_lr,args.lr))
+    # lr changing is BUG-gy!
+    # if args.lr != optimizer.param_groups[0]['lr']:
+    #     old_lr = optimizer.param_groups[0]['lr']
+    #     change_lr_to(optimizer,args.lr)
+    #     print('Changed optimzer lr from {} to {}.'.format(old_lr,args.lr))
 
     print('Building {}-engine for {}-reid'.format(args.loss, args.app))
-    engine = build_engine(args, datamanager, model, optimizer, scheduler)
+    engine = build_engine(args, datamanager, model, optimizer, scheduler, experiment)
 
     engine.run(**engine_run_kwargs(args))
 
