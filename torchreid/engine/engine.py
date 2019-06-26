@@ -84,7 +84,7 @@ class Engine(object):
 
         self.test_only = test_only
         if not test_only:
-            tfboard_event_path = osp.basename(osp.normpath(save_dir))
+            tfboard_event_path = osp.join('runs/',osp.basename(osp.normpath(save_dir)))
             self.writer = SummaryWriter(tfboard_event_path)
 
         if test_only:
