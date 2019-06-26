@@ -192,6 +192,8 @@ def init_parser():
                         help='gpu device ids for CUDA_VISIBLE_DEVICES')
     parser.add_argument('--use-avai-gpus', action='store_true',
                         help='use available gpus instead of specified devices')
+    parser.add_argument('--no-comet', action='store_true',
+                        help='disable comet.ml logging')
 
     return parser
 

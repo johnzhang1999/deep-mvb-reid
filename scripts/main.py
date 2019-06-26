@@ -24,12 +24,19 @@ args = parser.parse_args()
 
 # comet.ml experiment logging
 
-experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
-                        project_name="mvbchallenge", workspace="johnzhang1999")
-# experiment.log_parameters(imagedata_kwargs(args))
-# experiment.log_parameters(optimizer_kwargs(args))
-# experiment.log_parameters(lr_scheduler_kwargs(args))
-# experiment.log_parameters(engine_run_kwargs(args))
+if args.no_comet:
+    experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
+                        project_name="mvbchallenge", workspace="johnzhang1999",
+                        log_code=False, disabled=True)
+else:
+    experiment = Experiment(api_key="jYkp7GiEE17RfR1iGGvF2rMTB",
+                        project_name="mvbchallenge", workspace="johnzhang1999",
+                        log_code=False)
+
+name = args.arch + '_' + args.sources[0] + '_' + str(args.lr) + '_' + str(args.batch_size)
+experiment.set_name(name)
+if args.resume:
+    experiment.add_tag('resume')
 experiment.log_parameters(args.__dict__)
 
 
@@ -141,10 +148,11 @@ def main():
     if args.resume and check_isfile(args.resume):
         args.start_epoch = resume_from_checkpoint(args.resume, model, optimizer=optimizer)
     
-    if args.lr != optimizer.param_groups[0]['lr']:
-        old_lr = optimizer.param_groups[0]['lr']
-        change_lr_to(optimizer,args.lr)
-        print('Changed optimzer lr from {} to {}.'.format(old_lr,args.lr))
+    # lr changing is BUG-gy!
+    # if args.lr != optimizer.param_groups[0]['lr']:
+    #     old_lr = optimizer.param_groups[0]['lr']
+    #     change_lr_to(optimizer,args.lr)
+    #     print('Changed optimzer lr from {} to {}.'.format(old_lr,args.lr))
 
     print('Building {}-engine for {}-reid'.format(args.loss, args.app))
     engine = build_engine(args, datamanager, model, optimizer, scheduler, experiment)

@@ -125,6 +125,10 @@ class Engine(object):
                 elif eval_freq>0 and (epoch+1)%eval_freq==0 and (epoch+1)!=max_epoch:
                     print('saving pre-test checkpoint...')
                     self._save_checkpoint(epoch, -1, save_dir)
+                    
+                # for resuming debugging below
+                # self._save_checkpoint(epoch, -1, save_dir)
+                # print('saving every checkpoint...')
 
         if max_epoch > 0:
             print('=> Final test')

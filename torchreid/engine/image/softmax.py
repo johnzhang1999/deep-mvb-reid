@@ -118,6 +118,7 @@ class ImageSoftmaxEngine(engine.Engine):
 
             # write to Tensorboard & comet.ml
             for i,r in enumerate(accs):
+                r = float(r)
                 self.writer.add_scalar('ranks/rank-'+str(i+1),r,global_step)
                 self.experiment.log_metric('ranks/rank-'+str(i+1),r,step=global_step)
             
