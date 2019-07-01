@@ -93,7 +93,7 @@ def load_checkpoint(fpath):
     return checkpoint
 
 
-def resume_from_checkpoint(fpath, model, optimizer=None):
+def resume_from_checkpoint(fpath, model, optimizer=None, scheduler=None):
     r"""Resumes training from a checkpoint.
 
     This will load (1) model weights and (2) ``state_dict``
@@ -119,6 +119,9 @@ def resume_from_checkpoint(fpath, model, optimizer=None):
     if optimizer is not None and 'optimizer' in checkpoint.keys():
         optimizer.load_state_dict(checkpoint['optimizer'])
         print('Loaded optimizer')
+    if scheduler is not None and 'scheduler' in checkpoint.keys():
+        scheduler.load_state_dict(checkpoint['scheduler'])
+        print('Loaded scheduler')
     start_epoch = checkpoint['epoch']
     print('Last epoch = {}'.format(start_epoch))
     if 'rank1' in checkpoint.keys():

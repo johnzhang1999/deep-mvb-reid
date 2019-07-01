@@ -364,4 +364,5 @@ class Engine(object):
             'epoch': epoch + 1,
             'rank1': rank1,
             'optimizer': self.optimizer.state_dict(),
+            'scheduler': self.scheduler.state_dict(),
         }, save_dir, is_best=is_best)
