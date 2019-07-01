@@ -171,6 +171,8 @@ class ImageSoftmaxEngine(engine.Engine):
             
             end = time.time()
 
-        if self.scheduler is not None:
+        if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+            self.scheduler.step(losses.val)
+        elif self.scheduler is not None:
             self.scheduler.step()
         

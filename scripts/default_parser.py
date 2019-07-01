@@ -117,7 +117,10 @@ def init_parser():
     # ************************************************************
     # Learning rate scheduler options
     # ************************************************************
-    parser.add_argument('--lr-scheduler', type=str, default='multi_step',
+    # parser.add_argument('--lr-scheduler', type=str, default='multi_step',
+    #                     help='learning rate scheduler (see lr_schedulers.py)')
+    # NOTE: Auto is the ReduceLROnPlateau scheduler
+    parser.add_argument('--lr-scheduler', type=str, default='auto',
                         help='learning rate scheduler (see lr_schedulers.py)')
     parser.add_argument('--stepsize', type=int, default=[20, 40], nargs='+',
                         help='stepsize to decay learning rate')
