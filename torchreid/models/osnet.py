@@ -58,7 +58,7 @@ class Bottleneck(nn.Module):
             nn.ReLU(),
             nn.Linear(width,width),
             nn.BatchNorm1d(width),
-            nn.ReLU()
+            nn.Sigmoid()
         )
         self.branches = nn.ModuleList()
         for i in range(1,self.cardinality+1):
@@ -70,8 +70,8 @@ class Bottleneck(nn.Module):
     
     def lite3x3(self, inplanes, planes, stride=1):
         return nn.Sequential(
-            conv1x1(inplanes,inplanes), #pointwise 1x1
-            conv3x3(inplanes, planes, groups=inplanes), #depthwise 3x3
+            conv1x1(inplanes, planes), #pointwise 1x1
+            conv3x3(planes, planes, groups=planes), #depthwise 3x3
             nn.BatchNorm2d(planes),
             nn.ReLU(inplace=True)
         )
