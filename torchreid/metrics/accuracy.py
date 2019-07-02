@@ -3,7 +3,7 @@ from __future__ import print_function
 from __future__ import division
 
 
-def accuracy(output, target, topk=(1,2,3,4,5)):
+def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for
     the specified values of k.
 

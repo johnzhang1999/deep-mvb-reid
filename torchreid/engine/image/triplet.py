@@ -87,7 +87,7 @@ class ImageTripletEngine(engine.Engine):
         losses_t = AverageMeter()
         losses_x = AverageMeter()
         losses = AverageMeter()
-        ranks_meters = [AverageMeter() for _ in range(5)]
+        accs = AverageMeter()
         batch_time = AverageMeter()
         data_time = AverageMeter()
 
@@ -122,16 +122,12 @@ class ImageTripletEngine(engine.Engine):
             losses_t.update(loss_t.item(), pids.size(0))
             losses_x.update(loss_x.item(), pids.size(0))
             losses.update(loss.item(), pids.size(0))
-            ranks = metrics.accuracy(outputs, pids)
-            for i,meter in enumerate(ranks_meters):
-                meter.update(ranks[i].item())
+            accs.update(metrics.accuracy(outputs, pids, topk=(1))[0].item())
 
             # write to Tensorboard & comet.ml
-            ranks_dict = {'train-rank-'+str(i+1): float(r) for i,r in enumerate(ranks)}
 
-            for i,r in enumerate(ranks):
-                self.writer.add_scalars('metrics/train-ranks',{'train-rank-'+str(i+1): float(r)},global_step)
-            self.experiment.log_metrics(ranks_dict,step=global_step)
+            self.writer.add_scalars('optim/accs',accs.val,global_step)
+            self.experiment.log_metric('optim/accs',accs.val,step=global_step)
 
             self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
             self.experiment.log_metric('optim/loss',losses.val,step=global_step) 
@@ -154,11 +150,7 @@ class ImageTripletEngine(engine.Engine):
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                       'Loss_t {loss_t.val:.4f} ({loss_t.avg:.4f})\t'
                       'Loss_x {loss_x.val:.4f} ({loss_x.avg:.4f})\t'
-                      'Rank-1 {r1.val:.2f} ({r1.avg:.2f})\t'
-                      'Rank-2 {r2.val:.2f} ({r2.avg:.2f})\t'
-                      'Rank-3 {r3.val:.2f} ({r3.avg:.2f})\t'
-                      'Rank-4 {r4.val:.2f} ({r4.avg:.2f})\t'
-                      'Rank-5 {r5.val:.2f} ({r5.avg:.2f})\t'
+                      'Acc {acc.val:.2f} ({acc.avg:.2f})\t'
                       'Lr {lr:.6f}\t'
                       'Eta {eta}'.format(
                       epoch+1, max_epoch, batch_idx+1, len(trainloader),
@@ -167,11 +159,7 @@ class ImageTripletEngine(engine.Engine):
                       loss=losses,
                       loss_t=losses_t,
                       loss_x=losses_x,
-                      r1=ranks_meters[0],
-                      r2=ranks_meters[1],
-                      r3=ranks_meters[2],
-                      r4=ranks_meters[3],
-                      r5=ranks_meters[4],
+                      acc=accs,
                       lr=self.optimizer.param_groups[0]['lr'],
                       eta=eta_str
                     )

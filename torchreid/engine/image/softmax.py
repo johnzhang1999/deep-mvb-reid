@@ -74,11 +74,7 @@ class ImageSoftmaxEngine(engine.Engine):
 
     def train(self, epoch, max_epoch, trainloader, fixbase_epoch=0, open_layers=None, print_freq=10):
         losses = AverageMeter()
-        rank_1 = AverageMeter()
-        rank_2 = AverageMeter()
-        rank_3 = AverageMeter()
-        rank_4 = AverageMeter()
-        rank_5 = AverageMeter()
+        top_meters = [AverageMeter() for _ in range(5)]
         batch_time = AverageMeter()
         data_time = AverageMeter()
 
@@ -109,27 +105,16 @@ class ImageSoftmaxEngine(engine.Engine):
             batch_time.update(time.time() - end)
 
             losses.update(loss.item(), pids.size(0))
-            accs = metrics.accuracy(outputs, pids)
-            rank_1.update(accs[0].item())
-            rank_2.update(accs[1].item())
-            rank_3.update(accs[2].item())
-            rank_4.update(accs[3].item())
-            rank_5.update(accs[4].item())
+            accs = metrics.accuracy(outputs, pids, topk=(1,2,3,4,5))
+            for i,meter in enumerate(top_meters):
+                meter.update(accs[i].item())
 
             # write to Tensorboard & comet.ml
-            ranks = {'train-rank-'+str(i+1): float(r) for i,r in enumerate(accs)}
-            # print('###RANKS',ranks)
+            accs_dict = {'train-accs-top-'+str(i+1): float(r) for i,r in enumerate(accs)}
 
             for i,r in enumerate(accs):
-                self.writer.add_scalars('metrics/train-ranks',{'train-rank-'+str(i+1): float(r)},global_step)
-            self.experiment.log_metrics(ranks,step=global_step)
-            # self.writer.add_scalars('metrics/train-ranks',ranks,global_step)
-            
-            # self.writer.add_scalar('ranks-avg/rank-1',rank_1.avg,global_step)
-            # self.writer.add_scalar('ranks-avg/rank-2',rank_2.avg,global_step)
-            # self.writer.add_scalar('ranks-avg/rank-3',rank_3.avg,global_step)
-            # self.writer.add_scalar('ranks-avg/rank-4',rank_4.avg,global_step)
-            # self.writer.add_scalar('ranks-avg/rank-5',rank_5.avg,global_step)
+                self.writer.add_scalars('optim/train-accs',{'top-'+str(i+1): float(r)},global_step)
+            self.experiment.log_metrics(accs_dict,step=global_step)
                 
             self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
             # self.writer.add_scalar('optim/loss-avg',losses.avg,global_step)
@@ -147,22 +132,22 @@ class ImageSoftmaxEngine(engine.Engine):
                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                       'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'Rank-1 {r1.val:.2f} ({r1.avg:.2f})\t'
-                      'Rank-2 {r2.val:.2f} ({r2.avg:.2f})\t'
-                      'Rank-3 {r3.val:.2f} ({r3.avg:.2f})\t'
-                      'Rank-4 {r4.val:.2f} ({r4.avg:.2f})\t'
-                      'Rank-5 {r5.val:.2f} ({r5.avg:.2f})\t'
+                      'Top-1 {r1.val:.2f} ({r1.avg:.2f})\t'
+                      'Top-2 {r2.val:.2f} ({r2.avg:.2f})\t'
+                      'Top-3 {r3.val:.2f} ({r3.avg:.2f})\t'
+                      'Top-4 {r4.val:.2f} ({r4.avg:.2f})\t'
+                      'Top-5 {r5.val:.2f} ({r5.avg:.2f})\t'
                       'Lr {lr:.6f}\t'
                       'Eta {eta}'.format(
                       epoch+1, max_epoch, batch_idx+1, len(trainloader),
                       batch_time=batch_time,
                       data_time=data_time,
                       loss=losses,
-                      r1=rank_1,
-                      r2=rank_2,
-                      r3=rank_3,
-                      r4=rank_4,
-                      r5=rank_5,
+                      r1=top_meters[0],
+                      r2=top_meters[1],
+                      r3=top_meters[2],
+                      r4=top_meters[3],
+                      r5=top_meters[4],
                       lr=self.optimizer.param_groups[0]['lr'],
                       eta=eta_str
                     )
