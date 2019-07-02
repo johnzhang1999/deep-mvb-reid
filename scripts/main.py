@@ -72,7 +72,8 @@ def build_engine(args, datamanager, model, optimizer, scheduler, experiment=expe
                 weight_x=args.weight_x,
                 scheduler=scheduler,
                 use_cpu=args.use_cpu,
-                label_smooth=args.label_smooth
+                label_smooth=args.label_smooth,
+                experiment=experiment
             )
     
     else:

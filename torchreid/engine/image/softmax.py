@@ -138,8 +138,6 @@ class ImageSoftmaxEngine(engine.Engine):
             self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
             self.experiment.log_metric('optim/lr',self.optimizer.param_groups[0]['lr'],step=global_step)
             
-
-
             if (batch_idx+1) % print_freq == 0:
                 # estimate remaining time
                 num_batches = len(trainloader)

@@ -70,8 +70,8 @@ class ImageTripletEngine(engine.Engine):
 
     def __init__(self, datamanager, model, optimizer, margin=0.3,
                  weight_t=1, weight_x=1, scheduler=None, use_cpu=False,
-                 label_smooth=True):
-        super(ImageTripletEngine, self).__init__(datamanager, model, optimizer, scheduler, use_cpu)
+                 label_smooth=True, experiment=None):
+        super(ImageTripletEngine, self).__init__(datamanager, model, optimizer, scheduler, use_cpu, experiment)
 
         self.weight_t = weight_t
         self.weight_x = weight_x
@@ -86,7 +86,8 @@ class ImageTripletEngine(engine.Engine):
     def train(self, epoch, max_epoch, trainloader, fixbase_epoch=0, open_layers=None, print_freq=10):
         losses_t = AverageMeter()
         losses_x = AverageMeter()
-        accs = AverageMeter()
+        losses = AverageMeter()
+        ranks_meters = [AverageMeter() for _ in range(5)]
         batch_time = AverageMeter()
         data_time = AverageMeter()
 
@@ -100,6 +101,8 @@ class ImageTripletEngine(engine.Engine):
         end = time.time()
         for batch_idx, data in enumerate(trainloader):
             data_time.update(time.time() - end)
+            num_batches = len(trainloader)
+            global_step = num_batches * epoch + batch_idx
 
             imgs, pids = self._parse_data_for_train(data)
             if self.use_gpu:
@@ -118,7 +121,27 @@ class ImageTripletEngine(engine.Engine):
 
             losses_t.update(loss_t.item(), pids.size(0))
             losses_x.update(loss_x.item(), pids.size(0))
-            accs.update(metrics.accuracy(outputs, pids)[0].item())
+            losses.update(loss.item(), pids.size(0))
+            ranks = metrics.accuracy(outputs, pids)
+            for i,meter in enumerate(ranks_meters):
+                meter.update(ranks[i].item())
+
+            # write to Tensorboard & comet.ml
+            ranks_dict = {'train-rank-'+str(i+1): float(r) for i,r in enumerate(ranks)}
+
+            for i,r in enumerate(ranks):
+                self.writer.add_scalars('metrics/train-ranks',{'train-rank-'+str(i+1): float(r)},global_step)
+            self.experiment.log_metrics(ranks_dict,step=global_step)
+
+            self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
+            self.experiment.log_metric('optim/loss',losses.val,step=global_step) 
+            self.writer.add_scalar('optim/loss_triplet',losses_t.val,global_step) 
+            self.experiment.log_metric('optim/loss_triplet',losses_t.val,step=global_step)
+            self.writer.add_scalar('optim/loss_softmax',losses_x.val,global_step) 
+            self.experiment.log_metric('optim/loss_softmax',losses_x.val,step=global_step)
+
+            self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
+            self.experiment.log_metric('optim/lr',self.optimizer.param_groups[0]['lr'],step=global_step)
 
             if (batch_idx+1) % print_freq == 0:
                 # estimate remaining time
@@ -128,23 +151,37 @@ class ImageTripletEngine(engine.Engine):
                 print('Epoch: [{0}/{1}][{2}/{3}]\t'
                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                       'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                       'Loss_t {loss_t.val:.4f} ({loss_t.avg:.4f})\t'
                       'Loss_x {loss_x.val:.4f} ({loss_x.avg:.4f})\t'
-                      'Acc {acc.val:.2f} ({acc.avg:.2f})\t'
+                      'Rank-1 {r1.val:.2f} ({r1.avg:.2f})\t'
+                      'Rank-2 {r2.val:.2f} ({r2.avg:.2f})\t'
+                      'Rank-3 {r3.val:.2f} ({r3.avg:.2f})\t'
+                      'Rank-4 {r4.val:.2f} ({r4.avg:.2f})\t'
+                      'Rank-5 {r5.val:.2f} ({r5.avg:.2f})\t'
                       'Lr {lr:.6f}\t'
                       'Eta {eta}'.format(
                       epoch+1, max_epoch, batch_idx+1, len(trainloader),
                       batch_time=batch_time,
                       data_time=data_time,
+                      loss=losses,
                       loss_t=losses_t,
                       loss_x=losses_x,
-                      acc=accs,
+                      r1=ranks_meters[0],
+                      r2=ranks_meters[1],
+                      r3=ranks_meters[2],
+                      r4=ranks_meters[3],
+                      r5=ranks_meters[4],
                       lr=self.optimizer.param_groups[0]['lr'],
                       eta=eta_str
                     )
                 )
+                self.writer.add_scalar('eta',eta_seconds,global_step)
+                self.experiment.log_metric('eta',eta_seconds,step=global_step)
             
             end = time.time()
 
-        if self.scheduler is not None:
+        if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+            self.scheduler.step(losses.val)
+        elif self.scheduler is not None:
             self.scheduler.step()
