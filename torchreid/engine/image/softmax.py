@@ -117,10 +117,13 @@ class ImageSoftmaxEngine(engine.Engine):
             rank_5.update(accs[4].item())
 
             # write to Tensorboard & comet.ml
-            ranks = {'rank-'+str(i+1): float(r) for i,r in enumerate(accs)}
+            ranks = {'train-rank-'+str(i+1): float(r) for i,r in enumerate(accs)}
             # print('###RANKS',ranks)
+
+            for i,r in enumerate(accs):
+                self.writer.add_scalars('metrics/train-ranks',{'train-rank-'+str(i+1): float(r)},global_step)
             self.experiment.log_metrics(ranks,step=global_step)
-            self.writer.add_scalars('ranks',ranks,global_step)
+            # self.writer.add_scalars('metrics/train-ranks',ranks,global_step)
             
             # self.writer.add_scalar('ranks-avg/rank-1',rank_1.avg,global_step)
             # self.writer.add_scalar('ranks-avg/rank-2',rank_2.avg,global_step)

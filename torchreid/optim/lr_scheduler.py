@@ -58,7 +58,8 @@ def build_lr_scheduler(optimizer, lr_scheduler, stepsize, gamma=0.1):
         )
     
     elif lr_scheduler == 'auto':
+        print('Using the ReduceLROnPlateau lr scheduler.')
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min',factor=gamma, patience=10, verbose=True)
+            optimizer, mode='min',factor=gamma, patience=5, verbose=True)
 
     return scheduler

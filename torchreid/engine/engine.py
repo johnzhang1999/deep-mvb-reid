@@ -320,9 +320,9 @@ class Engine(object):
             # write to Tensorboard and comet.ml
             if not self.test_only:
                 rs = {'eval-rank-{:<3}'.format(r):cmc[r-1] for r in ranks}
-                self.writer.add_scalars('eval',rs,epoch)
+                self.writer.add_scalars('metrics/eval-ranks',rs,epoch)
                 self.experiment.log_metrics(rs,step=epoch)
-                self.writer.add_scalar('eval/mAP',mAP,epoch)
+                self.writer.add_scalar('metrics/eval-mAP',mAP,epoch)
                 self.experiment.log_metric('eval-mAP',mAP,step=epoch)
                 print('Results written to tensorboard and comet.ml.')
 
