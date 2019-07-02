@@ -4,7 +4,7 @@ from __future__ import print_function
 import torch
 
 
-AVAI_SCH = ['single_step', 'multi_step']
+AVAI_SCH = ['single_step', 'multi_step', 'auto']
 
 
 def build_lr_scheduler(optimizer, lr_scheduler, stepsize, gamma=0.1):

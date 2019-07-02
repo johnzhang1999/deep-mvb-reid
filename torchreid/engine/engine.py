@@ -136,8 +136,8 @@ class Engine(object):
                     self._save_checkpoint(epoch, -1, save_dir)
                     
                 # for resuming debugging below
-                self._save_checkpoint(epoch, -1, save_dir)
-                print('saving every checkpoint...')
+                # self._save_checkpoint(epoch, -1, save_dir)
+                # print('saving every checkpoint...')
 
         if max_epoch > 0:
             print('=> Final test')
@@ -319,11 +319,11 @@ class Engine(object):
 
             # write to Tensorboard and comet.ml
             if not self.test_only:
-                for r in ranks:
-                    self.writer.add_scalar('eval/rank-{:<3}'.format(r),cmc[r-1],epoch)
-                    self.experiment.log_metric('eval/rank-{:<3}'.format(r),cmc[r-1],step=epoch)
+                rs = {'eval-rank-{:<3}'.format(r):cmc[r-1] for r in ranks}
+                self.writer.add_scalars('eval',rs,epoch)
+                self.experiment.log_metrics(rs,step=epoch)
                 self.writer.add_scalar('eval/mAP',mAP,epoch)
-                self.experiment.log_metric('eval/mAP',mAP,step=epoch)
+                self.experiment.log_metric('eval-mAP',mAP,step=epoch)
                 print('Results written to tensorboard and comet.ml.')
 
             if visrank:
