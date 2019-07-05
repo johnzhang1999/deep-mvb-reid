@@ -122,7 +122,7 @@ class ImageTripletEngine(engine.Engine):
             losses_t.update(loss_t.item(), pids.size(0))
             losses_x.update(loss_x.item(), pids.size(0))
             losses.update(loss.item(), pids.size(0))
-            accs.update(metrics.accuracy(outputs, pids, topk=(1))[0].item())
+            accs.update(metrics.accuracy(outputs, pids, topk=(1,))[0].item())
 
             # write to Tensorboard & comet.ml
 
