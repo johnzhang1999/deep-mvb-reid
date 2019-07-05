@@ -40,16 +40,17 @@ class MVB(ImageDataset):
     def process_dir(self, dir_path, relabel=False):
         ret = []
         real_ret = []
-        pid_container = set()
+        pid2label = {}
+        idx = 0
         with open(osp.join(dir_path)) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
                 filename,pid,cam = row[0],row[1],row[2]
-                pid_container.add(pid)
+                if pid not in pid2label:
+                	pid2label[pid] = idx
+                	idx += 1
                 abs_path = osp.join(self.dataset_dir,'Image/',filename)
                 ret.append((abs_path,pid,int(cam)))
-        pid2label = {pid:label for label, pid in enumerate(pid_container)}
-        # print(pid2label)
         if relabel:
             for path,pid,cam in ret:
                 real_ret.append((path,pid2label[pid],cam))
