@@ -7,7 +7,7 @@ import torch
 AVAI_SCH = ['single_step', 'multi_step', 'auto']
 
 
-def build_lr_scheduler(optimizer, lr_scheduler, stepsize, gamma=0.1):
+def build_lr_scheduler(optimizer, lr_scheduler, stepsize, gamma=0.1, patience=5, min_lr=0):
     """A function wrapper for building a learning rate scheduler.
 
     Args:
@@ -60,6 +60,6 @@ def build_lr_scheduler(optimizer, lr_scheduler, stepsize, gamma=0.1):
     elif lr_scheduler == 'auto':
         print('Using the ReduceLROnPlateau lr scheduler.')
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min',factor=gamma, patience=5, verbose=True)
+            optimizer, mode='min',factor=gamma, patience=patience, verbose=True, min_lr=min_lr)
 
     return scheduler

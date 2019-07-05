@@ -118,6 +118,10 @@ def init_parser():
                         help='stepsize to decay learning rate')
     parser.add_argument('--gamma', type=float, default=0.1,
                         help='learning rate decay')
+    parser.add_argument('--patience', type=int, default=5,
+                        help='epochs to wait before reducing lr')
+    parser.add_argument('--min-lr', type=float, default=0,
+                        help='minimum lr')
 
     # ************************************************************
     # Cross entropy loss
@@ -257,7 +261,9 @@ def lr_scheduler_kwargs(parsed_args):
     return {
         'lr_scheduler': parsed_args.lr_scheduler,
         'stepsize': parsed_args.stepsize,
-        'gamma': parsed_args.gamma
+        'gamma': parsed_args.gamma,
+        'patience': parsed_args.patience,
+        'min_lr': parsed_args.min_lr
     }
 
 
