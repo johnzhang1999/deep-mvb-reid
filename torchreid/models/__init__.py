@@ -34,6 +34,7 @@ __model_factory = {
     'resnext50_32x4d': resnext50_32x4d,
     'resnext101_32x8d': resnext101_32x8d,
     'resnet50_fc512': resnet50_fc512,
+    'senet154': senet154,
     'se_resnet50': se_resnet50,
     'se_resnet50_fc512': se_resnet50_fc512,
     'se_resnet101': se_resnet101,
