@@ -19,16 +19,16 @@ class CAM(object):
         self.final_conv = final_conv
         
         self.model.eval()
-        print(list(self.model._modules.keys()))
-        1/0
-        final_layer = self.model._modules.get(self.final_conv)
+        # print(self.model)
+        # print(list(self.model._modules['module']._modules.keys()))
+        final_layer = self.model._modules['module']._modules.get(self.final_conv)
         if not final_layer == None:
             final_layer.register_forward_hook(self.append_final_conv)
         else:
             raise ValueError('Final conv layer is None.')
         
         params = list(self.model.parameters())
-        self.weight_softmax = np.squeeze(params[-2].data.numpy())
+        self.weight_softmax = np.squeeze(params[-2].data.cpu().numpy())
 
         normalize = transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -54,12 +54,14 @@ class CAM(object):
             cam = cam.reshape(h, w)
             cam = cam - np.min(cam)
             cam_img = cam / np.max(cam)
+            # cam_img = 1.0 - cam_img
             cam_img = np.uint8(255 * cam_img)
             output_cam.append(cv2.resize(cam_img, size_upsample))
         return output_cam
 
 
     def process_name(self, fname):
+        fname = fname.split('/')[-1]
         fname = fname.split('.')
         extention = fname[-1]
         return '.'.join(fname[:-1]) + '_CAM.' + extention
@@ -76,8 +78,8 @@ class CAM(object):
 
         h_x = F.softmax(logit, dim=1).data.squeeze()
         probs, idx = h_x.sort(0, True)
-        probs = probs.numpy()
-        idx = idx.numpy()
+        probs = probs.cpu().numpy()
+        idx = idx.cpu().numpy()
 
         CAMs = self.returnCAM(features[-1], self.weight_softmax, [idx[0]])
 
@@ -85,7 +87,26 @@ class CAM(object):
                                     cv2.COLORMAP_JET)
         result = heatmap * 0.3 + img * 0.5
 
-        cv2.imwrite(str(Path(cam_location)/self.process_name(image_fname)), result)
+        output_path = str(Path(cam_location)/self.process_name(image_fname))
+        
+        # cv2.imwrite(output_path, result)
+
+        plt.figure()
+        plt.title('CAM of {}'.format(image_fname))
+        plt.subplot(1,2,1)
+        plt.imshow(img)
+        plt.grid(False)
+        plt.xticks([])
+        plt.yticks([])
+        plt.xlabel('original')
+        plt.subplot(1,2,2)
+        plt.imshow(result.astype(np.int32))
+        plt.grid(False)
+        plt.xticks([])
+        plt.yticks([])
+        plt.xlabel('CAM')
+        plt.savefig(output_path)
+        # print('img wrote to {}'.format(output_path))
 
         if display:
             img = plt.imread(image_fname)
