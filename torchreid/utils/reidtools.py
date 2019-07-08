@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-__all__ = ['visualize_ranked_results']
+__all__ = ['visualize_ranked_results', 'visualize_cam']
 
 import numpy as np
 import os
@@ -9,6 +9,7 @@ import os.path as osp
 import shutil
 
 from .tools import mkdir_if_missing
+from .cam import CAM
 
 
 def visualize_ranked_results(distmat, dataset, save_dir='', topk=20):
@@ -73,3 +74,20 @@ def visualize_ranked_results(distmat, dataset, save_dir='', topk=20):
                     break
 
     print("Done")
+
+def visualize_cam(model, finalconv, dataset, save_dir, num=10):
+    print('Visualizing CAMs...')
+    visualizer = CAM(model, finalconv, dim=(256,256))
+    query, gallery = dataset
+    counter = 0
+    mkdir_if_missing(save_dir)
+    for qimg_path, _, _ in query:
+        if counter >= num: break
+        visualizer.computeCAM(qimg_path, cam_location=save_dir)
+        counter += 1
+    counter = 0
+    for gimg_path, _, _ in gallery:
+        if counter >= num: break
+        visualizer.computeCAM(gimg_path, cam_location=save_dir)
+        counter += 1
+    print('CAMs saved to {}.'.format(save_dir))
