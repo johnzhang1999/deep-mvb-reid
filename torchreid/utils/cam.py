@@ -106,6 +106,7 @@ class CAM(object):
         plt.yticks([])
         plt.xlabel('CAM')
         plt.savefig(output_path)
+        plt.close()
         # print('img wrote to {}'.format(output_path))
 
         if display:

@@ -82,12 +82,12 @@ def visualize_cam(model, finalconv, dataset, save_dir, num=10):
     counter = 0
     mkdir_if_missing(save_dir)
     for qimg_path, _, _ in query:
-        if counter > num: break
+        if counter >= num: break
         visualizer.computeCAM(qimg_path, cam_location=save_dir)
         counter += 1
     counter = 0
     for gimg_path, _, _ in gallery:
-        if counter > num: break
+        if counter >= num: break
         visualizer.computeCAM(gimg_path, cam_location=save_dir)
         counter += 1
     print('CAMs saved to {}.'.format(save_dir))
