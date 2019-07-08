@@ -173,6 +173,10 @@ def init_parser():
                         help='visualize ranked results, only available in evaluation mode')
     parser.add_argument('--visrank-topk', type=int, default=20,
                         help='visualize topk ranks')
+    parser.add_argument('--viscam', action='store_true',
+                        help='visualize class activation map')
+    parser.add_argument('--viscam-num', type=int, default=10,
+                        help='visualize k CAMs')
     
     # ************************************************************
     # Miscs
@@ -282,6 +286,8 @@ def engine_run_kwargs(parsed_args):
         'normalize_feature': parsed_args.normalize_feature,
         'visrank': parsed_args.visrank,
         'visrank_topk': parsed_args.visrank_topk,
+        'viscam': parsed_args.viscam,
+        'viscam_num': parsed_args.viscam_num,
         'use_metric_cuhk03': parsed_args.use_metric_cuhk03,
         'ranks': parsed_args.ranks,
         'rerank': parsed_args.rerank

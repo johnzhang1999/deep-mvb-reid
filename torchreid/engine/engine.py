@@ -13,7 +13,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 import torchreid
-from torchreid.utils import AverageMeter, visualize_ranked_results, save_checkpoint, re_ranking
+from torchreid.utils import AverageMeter, visualize_ranked_results, visualize_cam, save_checkpoint, re_ranking
 from torchreid.losses import DeepSupervision
 from torchreid import metrics
 
@@ -48,7 +48,7 @@ class Engine(object):
     def run(self, save_dir='log', max_epoch=0, start_epoch=0, fixbase_epoch=0, open_layers=None,
             start_eval=0, eval_freq=-1, test_only=False, print_freq=10,
             dist_metric='euclidean', normalize_feature=False, visrank=False, visrank_topk=20,
-            use_metric_cuhk03=False, ranks=[1, 5, 10, 20], rerank=False):
+            use_metric_cuhk03=False, ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10):
         r"""A unified pipeline for training and evaluating a model.
 
         Args:
@@ -107,7 +107,9 @@ class Engine(object):
                 save_dir=save_dir,
                 use_metric_cuhk03=use_metric_cuhk03,
                 ranks=ranks,
-                rerank=rerank
+                rerank=rerank,
+                viscam=viscam,
+                viscam_num=viscam_num
             )
             return
 
@@ -128,7 +130,9 @@ class Engine(object):
                         visrank_topk=visrank_topk,
                         save_dir=save_dir,
                         use_metric_cuhk03=use_metric_cuhk03,
-                        ranks=ranks
+                        ranks=ranks,
+                        viscam=viscam,
+                        viscam_num=viscam_num
                     )
                     self._save_checkpoint(epoch, rank1, save_dir)
                 elif eval_freq>0 and (epoch+1)%eval_freq==0 and (epoch+1)!=max_epoch:
@@ -150,7 +154,9 @@ class Engine(object):
                 visrank_topk=visrank_topk,
                 save_dir=save_dir,
                 use_metric_cuhk03=use_metric_cuhk03,
-                ranks=ranks
+                ranks=ranks,
+                viscam=viscam,
+                viscam_num=viscam_num
             )
             self._save_checkpoint(epoch, rank1, save_dir)
 
@@ -179,7 +185,7 @@ class Engine(object):
 
     def test(self, epoch, testloader, dist_metric='euclidean', normalize_feature=False,
              visrank=False, visrank_topk=20, save_dir='', use_metric_cuhk03=False,
-             ranks=[1, 5, 10, 20], rerank=False):
+             ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10):
         r"""Tests model on target datasets.
 
         .. note::
@@ -232,7 +238,9 @@ class Engine(object):
                 save_dir=save_dir,
                 use_metric_cuhk03=use_metric_cuhk03,
                 ranks=ranks,
-                rerank=rerank
+                rerank=rerank,
+                viscam=viscam,
+                viscam_num=viscam_num
             )
         
         return rank1
@@ -241,7 +249,7 @@ class Engine(object):
     def _evaluate(self, epoch, dataset_name='', queryloader=None, galleryloader=None,
                   dist_metric='euclidean', normalize_feature=False, visrank=False,
                   visrank_topk=20, save_dir='', use_metric_cuhk03=False, ranks=[1, 5, 10, 20],
-                  rerank=False):
+                  rerank=False, viscam=False, viscam_num=10):
         with self.experiment.test():
             batch_time = AverageMeter()
 
@@ -333,6 +341,16 @@ class Engine(object):
                     save_dir=osp.join(save_dir, 'visrank-'+str(epoch+1), dataset_name),
                     topk=visrank_topk
                 )
+            
+            if viscam:
+                visualize_cam(
+                    model=self.model, 
+                    finalconv='conv5', # for OSNet
+                    dataset=self.datamanager.return_testdataset_by_name(dataset_name),
+                    save_dir=osp.join(save_dir, 'viscam-'+str(epoch+1), dataset_name),
+                    num=viscam_num
+                )
+
 
         return cmc[0]
 
