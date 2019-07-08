@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from .avgmeter import *
+from .cam import *
 from .loggers import *
 from .tools import *
 from .reidtools import *

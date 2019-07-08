@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from PIL import Image
 from torchvision import models, transforms
 from torch.autograd import Variable
@@ -7,16 +9,24 @@ import numpy as np
 from pathlib import Path
 import cv2
 
+__all__ = ['CAM']
+
 features = []
 
 class CAM(object):
-    def __init__(self,model,final_conv):
+    def __init__(self,model,final_conv,dim=(256,256)):
         self.model = model
         self.final_conv = final_conv
         
         self.model.eval()
-
-        self.model._modules.get(self.final_conv).register_forward_hook(self.append_final_conv)
+        print(list(self.model._modules.keys()))
+        1/0
+        final_layer = self.model._modules.get(self.final_conv)
+        if not final_layer == None:
+            final_layer.register_forward_hook(self.append_final_conv)
+        else:
+            raise ValueError('Final conv layer is None.')
+        
         params = list(self.model.parameters())
         self.weight_softmax = np.squeeze(params[-2].data.numpy())
 
@@ -25,7 +35,7 @@ class CAM(object):
             std=[0.229, 0.224, 0.225]
         )  # FIXME: Do we want to change normalize to fit our dataset?
         self.preprocess = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize(dim),
             transforms.ToTensor(),
             normalize
         ])  # TODO: Also, did we use 224 by 224?
