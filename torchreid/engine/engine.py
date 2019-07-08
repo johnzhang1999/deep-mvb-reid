@@ -255,84 +255,84 @@ class Engine(object):
 
             self.model.eval()
 
-            print('Extracting features from query set ...')
-            qf, q_pids, q_camids = [], [], [] # query features, query person IDs and query camera IDs
-            for batch_idx, data in enumerate(queryloader):
-                imgs, pids, camids = self._parse_data_for_eval(data)
-                if self.use_gpu:
-                    imgs = imgs.cuda()
-                end = time.time()
-                features = self._extract_features(imgs)
-                batch_time.update(time.time() - end)
-                features = features.data.cpu()
-                qf.append(features)
-                q_pids.extend(pids)
-                q_camids.extend(camids)
-            qf = torch.cat(qf, 0)
-            q_pids = np.asarray(q_pids)
-            q_camids = np.asarray(q_camids)
-            print('Done, obtained {}-by-{} matrix'.format(qf.size(0), qf.size(1)))
+            # print('Extracting features from query set ...')
+            # qf, q_pids, q_camids = [], [], [] # query features, query person IDs and query camera IDs
+            # for batch_idx, data in enumerate(queryloader):
+            #     imgs, pids, camids = self._parse_data_for_eval(data)
+            #     if self.use_gpu:
+            #         imgs = imgs.cuda()
+            #     end = time.time()
+            #     features = self._extract_features(imgs)
+            #     batch_time.update(time.time() - end)
+            #     features = features.data.cpu()
+            #     qf.append(features)
+            #     q_pids.extend(pids)
+            #     q_camids.extend(camids)
+            # qf = torch.cat(qf, 0)
+            # q_pids = np.asarray(q_pids)
+            # q_camids = np.asarray(q_camids)
+            # print('Done, obtained {}-by-{} matrix'.format(qf.size(0), qf.size(1)))
 
-            print('Extracting features from gallery set ...')
-            gf, g_pids, g_camids = [], [], [] # gallery features, gallery person IDs and gallery camera IDs
-            end = time.time()
-            for batch_idx, data in enumerate(galleryloader):
-                imgs, pids, camids = self._parse_data_for_eval(data)
-                if self.use_gpu:
-                    imgs = imgs.cuda()
-                end = time.time()
-                features = self._extract_features(imgs)
-                batch_time.update(time.time() - end)
-                features = features.data.cpu()
-                gf.append(features)
-                g_pids.extend(pids)
-                g_camids.extend(camids)
-            gf = torch.cat(gf, 0)
-            g_pids = np.asarray(g_pids)
-            g_camids = np.asarray(g_camids)
-            print('Done, obtained {}-by-{} matrix'.format(gf.size(0), gf.size(1)))
+            # print('Extracting features from gallery set ...')
+            # gf, g_pids, g_camids = [], [], [] # gallery features, gallery person IDs and gallery camera IDs
+            # end = time.time()
+            # for batch_idx, data in enumerate(galleryloader):
+            #     imgs, pids, camids = self._parse_data_for_eval(data)
+            #     if self.use_gpu:
+            #         imgs = imgs.cuda()
+            #     end = time.time()
+            #     features = self._extract_features(imgs)
+            #     batch_time.update(time.time() - end)
+            #     features = features.data.cpu()
+            #     gf.append(features)
+            #     g_pids.extend(pids)
+            #     g_camids.extend(camids)
+            # gf = torch.cat(gf, 0)
+            # g_pids = np.asarray(g_pids)
+            # g_camids = np.asarray(g_camids)
+            # print('Done, obtained {}-by-{} matrix'.format(gf.size(0), gf.size(1)))
 
-            print('Speed: {:.4f} sec/batch'.format(batch_time.avg))
+            # print('Speed: {:.4f} sec/batch'.format(batch_time.avg))
 
-            if normalize_feature:
-                print('Normalzing features with L2 norm ...')
-                qf = F.normalize(qf, p=2, dim=1)
-                gf = F.normalize(gf, p=2, dim=1)
+            # if normalize_feature:
+            #     print('Normalzing features with L2 norm ...')
+            #     qf = F.normalize(qf, p=2, dim=1)
+            #     gf = F.normalize(gf, p=2, dim=1)
 
-            print('Computing distance matrix with metric={} ...'.format(dist_metric))
-            distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
-            distmat = distmat.numpy()
+            # print('Computing distance matrix with metric={} ...'.format(dist_metric))
+            # distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
+            # distmat = distmat.numpy()
 
-            if rerank:
-                print('Applying person re-ranking ...')
-                distmat_qq = metrics.compute_distance_matrix(qf, qf, dist_metric)
-                distmat_gg = metrics.compute_distance_matrix(gf, gf, dist_metric)
-                distmat = re_ranking(distmat, distmat_qq, distmat_gg)
+            # if rerank:
+            #     print('Applying person re-ranking ...')
+            #     distmat_qq = metrics.compute_distance_matrix(qf, qf, dist_metric)
+            #     distmat_gg = metrics.compute_distance_matrix(gf, gf, dist_metric)
+            #     distmat = re_ranking(distmat, distmat_qq, distmat_gg)
 
-            print('Computing CMC and mAP ...')
-            cmc, mAP = metrics.evaluate_rank(
-                distmat,
-                q_pids,
-                g_pids,
-                q_camids,
-                g_camids,
-                use_metric_cuhk03=use_metric_cuhk03
-            )
+            # print('Computing CMC and mAP ...')
+            # cmc, mAP = metrics.evaluate_rank(
+            #     distmat,
+            #     q_pids,
+            #     g_pids,
+            #     q_camids,
+            #     g_camids,
+            #     use_metric_cuhk03=use_metric_cuhk03
+            # )
 
-            print('** Results **')
-            print('mAP: {:.1%}'.format(mAP))
-            print('CMC curve')
-            for r in ranks:
-                print('Rank-{:<3}: {:.1%}'.format(r, cmc[r-1]))
+            # print('** Results **')
+            # print('mAP: {:.1%}'.format(mAP))
+            # print('CMC curve')
+            # for r in ranks:
+            #     print('Rank-{:<3}: {:.1%}'.format(r, cmc[r-1]))
 
-            # write to Tensorboard and comet.ml
-            if not self.test_only:
-                rs = {'eval-rank-{:<3}'.format(r):cmc[r-1] for r in ranks}
-                self.writer.add_scalars('eval/ranks',rs,epoch)
-                self.experiment.log_metrics(rs,step=epoch)
-                self.writer.add_scalar('eval/mAP',mAP,epoch)
-                self.experiment.log_metric('eval-mAP',mAP,step=epoch)
-                print('Results written to tensorboard and comet.ml.')
+            # # write to Tensorboard and comet.ml
+            # if not self.test_only:
+            #     rs = {'eval-rank-{:<3}'.format(r):cmc[r-1] for r in ranks}
+            #     self.writer.add_scalars('eval/ranks',rs,epoch)
+            #     self.experiment.log_metrics(rs,step=epoch)
+            #     self.writer.add_scalar('eval/mAP',mAP,epoch)
+            #     self.experiment.log_metric('eval-mAP',mAP,step=epoch)
+            #     print('Results written to tensorboard and comet.ml.')
 
             if visrank:
                 visualize_ranked_results(
@@ -341,7 +341,7 @@ class Engine(object):
                     save_dir=osp.join(save_dir, 'visrank-'+str(epoch+1), dataset_name),
                     topk=visrank_topk
                 )
-            
+
             if viscam:
                 visualize_cam(
                     model=self.model, 
