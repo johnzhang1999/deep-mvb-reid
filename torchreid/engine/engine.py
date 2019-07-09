@@ -347,7 +347,7 @@ class Engine(object):
                 )
 
             if viscam:
-                if arch == 'osnet_x1_0':
+                if arch == 'osnet_x1_0' or arch == 'osnet_custom':
                     # print(self.model)
                     visualize_cam(
                         model=self.model,

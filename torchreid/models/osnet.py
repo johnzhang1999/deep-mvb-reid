@@ -316,7 +316,7 @@ class OSNet(nn.Module):
 def osnet_custom(num_classes=1000, loss='softmax', **kwargs):
     # custom osnet
     return OSNet(num_classes, blocks=[OSBlock, OSBlock, OSBlock], layers=[2, 2, 2],
-                 channels=[64, 256, 384, 512], feature_dim=2048, loss=loss, **kwargs)
+                 channels=[64, 256, 384, 512], feature_dim=1024, loss=loss, **kwargs)
 
 def osnet_x1_0(num_classes=1000, loss='softmax', **kwargs):
     # standard size (width x1.0)
