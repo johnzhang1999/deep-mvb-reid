@@ -27,8 +27,10 @@ class CAM(object):
         else:
             raise ValueError('Final conv layer is None.')
         
-        params = list(self.model.parameters())
-        self.weight_softmax = np.squeeze(params[-2].data.cpu().numpy())
+        # TODO: use GAP or FC as weights in CAM?
+        params = dict(self.model.named_parameters())
+        # NOTE: fc.0 is NOT the fc layer but actually the GAP layer
+        self.weight_softmax = np.squeeze(params['module.fc.0.weight'].data.cpu().numpy())
 
         normalize = transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -54,7 +56,7 @@ class CAM(object):
             cam = cam.reshape(h, w)
             cam = cam - np.min(cam)
             cam_img = cam / np.max(cam)
-            # cam_img = 1.0 - cam_img
+            cam_img = 1.0 - cam_img
             cam_img = np.uint8(255 * cam_img)
             output_cam.append(cv2.resize(cam_img, size_upsample))
         return output_cam
