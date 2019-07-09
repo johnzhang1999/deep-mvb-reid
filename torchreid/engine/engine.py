@@ -123,6 +123,7 @@ class Engine(object):
                 
                 if (epoch+1)>=start_eval and eval_freq>0 and (epoch+1)%eval_freq==0 and (epoch+1)!=max_epoch:
                     rank1 = self.test(
+                        arch,
                         epoch,
                         testloader,
                         dist_metric=dist_metric,
@@ -147,6 +148,7 @@ class Engine(object):
         if max_epoch > 0:
             print('=> Final test')
             rank1 = self.test(
+                arch,
                 epoch,
                 testloader,
                 dist_metric=dist_metric,
