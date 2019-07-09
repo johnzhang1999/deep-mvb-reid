@@ -177,6 +177,8 @@ def init_parser():
                         help='visualize class activation map')
     parser.add_argument('--viscam-num', type=int, default=10,
                         help='visualize k CAMs')
+    parser.add_argument('--viscam-only', action='store_true',
+                        help='no CMC or mAP calculation, for debugging')
     
     # ************************************************************
     # Miscs
@@ -289,6 +291,7 @@ def engine_run_kwargs(parsed_args):
         'visrank_topk': parsed_args.visrank_topk,
         'viscam': parsed_args.viscam,
         'viscam_num': parsed_args.viscam_num,
+        'viscam_only': parsed_args.viscam_only,
         'use_metric_cuhk03': parsed_args.use_metric_cuhk03,
         'ranks': parsed_args.ranks,
         'rerank': parsed_args.rerank

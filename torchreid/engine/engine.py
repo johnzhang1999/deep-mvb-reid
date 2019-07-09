@@ -48,7 +48,8 @@ class Engine(object):
     def run(self, arch, save_dir='log', max_epoch=0, start_epoch=0, fixbase_epoch=0, open_layers=None,
             start_eval=0, eval_freq=-1, test_only=False, print_freq=10,
             dist_metric='euclidean', normalize_feature=False, visrank=False, visrank_topk=20,
-            use_metric_cuhk03=False, ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10):
+            use_metric_cuhk03=False, ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10,
+            viscam_only=False):
         r"""A unified pipeline for training and evaluating a model.
 
         Args:
@@ -110,7 +111,8 @@ class Engine(object):
                 ranks=ranks,
                 rerank=rerank,
                 viscam=viscam,
-                viscam_num=viscam_num
+                viscam_num=viscam_num,
+                viscam_only=viscam_only
             )
             return
 
@@ -134,7 +136,8 @@ class Engine(object):
                         use_metric_cuhk03=use_metric_cuhk03,
                         ranks=ranks,
                         viscam=viscam,
-                        viscam_num=viscam_num
+                        viscam_num=viscam_num,
+                        viscam_only=viscam_only
                     )
                     self._save_checkpoint(epoch, rank1, save_dir)
                 elif eval_freq>0 and (epoch+1)%eval_freq==0 and (epoch+1)!=max_epoch:
@@ -159,7 +162,8 @@ class Engine(object):
                 use_metric_cuhk03=use_metric_cuhk03,
                 ranks=ranks,
                 viscam=viscam,
-                viscam_num=viscam_num
+                viscam_num=viscam_num,
+                viscam_only=viscam_only
             )
             self._save_checkpoint(epoch, rank1, save_dir)
 
@@ -188,7 +192,7 @@ class Engine(object):
 
     def test(self, arch, epoch, testloader, dist_metric='euclidean', normalize_feature=False,
              visrank=False, visrank_topk=20, save_dir='', use_metric_cuhk03=False,
-             ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10):
+             ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10, viscam_only=False):
         r"""Tests model on target datasets.
 
         .. note::
@@ -244,7 +248,8 @@ class Engine(object):
                 ranks=ranks,
                 rerank=rerank,
                 viscam=viscam,
-                viscam_num=viscam_num
+                viscam_num=viscam_num,
+                viscam_only=viscam_only
             )
         
         return rank1
@@ -253,90 +258,91 @@ class Engine(object):
     def _evaluate(self, arch, epoch, dataset_name='', queryloader=None, galleryloader=None,
                   dist_metric='euclidean', normalize_feature=False, visrank=False,
                   visrank_topk=20, save_dir='', use_metric_cuhk03=False, ranks=[1, 5, 10, 20],
-                  rerank=False, viscam=False, viscam_num=10):
+                  rerank=False, viscam=False, viscam_num=10, viscam_only=False):
         with self.experiment.test():
-            # batch_time = AverageMeter()
+            if not viscam_only:
+                batch_time = AverageMeter()
 
-            # self.model.eval()
+                self.model.eval()
 
-            # print('Extracting features from query set ...')
-            # qf, q_pids, q_camids = [], [], [] # query features, query person IDs and query camera IDs
-            # for batch_idx, data in enumerate(queryloader):
-            #     imgs, pids, camids = self._parse_data_for_eval(data)
-            #     if self.use_gpu:
-            #         imgs = imgs.cuda()
-            #     end = time.time()
-            #     features = self._extract_features(imgs)
-            #     batch_time.update(time.time() - end)
-            #     features = features.data.cpu()
-            #     qf.append(features)
-            #     q_pids.extend(pids)
-            #     q_camids.extend(camids)
-            # qf = torch.cat(qf, 0)
-            # q_pids = np.asarray(q_pids)
-            # q_camids = np.asarray(q_camids)
-            # print('Done, obtained {}-by-{} matrix'.format(qf.size(0), qf.size(1)))
+                print('Extracting features from query set ...')
+                qf, q_pids, q_camids = [], [], [] # query features, query person IDs and query camera IDs
+                for batch_idx, data in enumerate(queryloader):
+                    imgs, pids, camids = self._parse_data_for_eval(data)
+                    if self.use_gpu:
+                        imgs = imgs.cuda()
+                    end = time.time()
+                    features = self._extract_features(imgs)
+                    batch_time.update(time.time() - end)
+                    features = features.data.cpu()
+                    qf.append(features)
+                    q_pids.extend(pids)
+                    q_camids.extend(camids)
+                qf = torch.cat(qf, 0)
+                q_pids = np.asarray(q_pids)
+                q_camids = np.asarray(q_camids)
+                print('Done, obtained {}-by-{} matrix'.format(qf.size(0), qf.size(1)))
 
-            # print('Extracting features from gallery set ...')
-            # gf, g_pids, g_camids = [], [], [] # gallery features, gallery person IDs and gallery camera IDs
-            # end = time.time()
-            # for batch_idx, data in enumerate(galleryloader):
-            #     imgs, pids, camids = self._parse_data_for_eval(data)
-            #     if self.use_gpu:
-            #         imgs = imgs.cuda()
-            #     end = time.time()
-            #     features = self._extract_features(imgs)
-            #     batch_time.update(time.time() - end)
-            #     features = features.data.cpu()
-            #     gf.append(features)
-            #     g_pids.extend(pids)
-            #     g_camids.extend(camids)
-            # gf = torch.cat(gf, 0)
-            # g_pids = np.asarray(g_pids)
-            # g_camids = np.asarray(g_camids)
-            # print('Done, obtained {}-by-{} matrix'.format(gf.size(0), gf.size(1)))
+                print('Extracting features from gallery set ...')
+                gf, g_pids, g_camids = [], [], [] # gallery features, gallery person IDs and gallery camera IDs
+                end = time.time()
+                for batch_idx, data in enumerate(galleryloader):
+                    imgs, pids, camids = self._parse_data_for_eval(data)
+                    if self.use_gpu:
+                        imgs = imgs.cuda()
+                    end = time.time()
+                    features = self._extract_features(imgs)
+                    batch_time.update(time.time() - end)
+                    features = features.data.cpu()
+                    gf.append(features)
+                    g_pids.extend(pids)
+                    g_camids.extend(camids)
+                gf = torch.cat(gf, 0)
+                g_pids = np.asarray(g_pids)
+                g_camids = np.asarray(g_camids)
+                print('Done, obtained {}-by-{} matrix'.format(gf.size(0), gf.size(1)))
 
-            # print('Speed: {:.4f} sec/batch'.format(batch_time.avg))
+                print('Speed: {:.4f} sec/batch'.format(batch_time.avg))
 
-            # if normalize_feature:
-            #     print('Normalzing features with L2 norm ...')
-            #     qf = F.normalize(qf, p=2, dim=1)
-            #     gf = F.normalize(gf, p=2, dim=1)
+                if normalize_feature:
+                    print('Normalzing features with L2 norm ...')
+                    qf = F.normalize(qf, p=2, dim=1)
+                    gf = F.normalize(gf, p=2, dim=1)
 
-            # print('Computing distance matrix with metric={} ...'.format(dist_metric))
-            # distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
-            # distmat = distmat.numpy()
+                print('Computing distance matrix with metric={} ...'.format(dist_metric))
+                distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
+                distmat = distmat.numpy()
 
-            # if rerank:
-            #     print('Applying person re-ranking ...')
-            #     distmat_qq = metrics.compute_distance_matrix(qf, qf, dist_metric)
-            #     distmat_gg = metrics.compute_distance_matrix(gf, gf, dist_metric)
-            #     distmat = re_ranking(distmat, distmat_qq, distmat_gg)
+                if rerank:
+                    print('Applying person re-ranking ...')
+                    distmat_qq = metrics.compute_distance_matrix(qf, qf, dist_metric)
+                    distmat_gg = metrics.compute_distance_matrix(gf, gf, dist_metric)
+                    distmat = re_ranking(distmat, distmat_qq, distmat_gg)
 
-            # print('Computing CMC and mAP ...')
-            # cmc, mAP = metrics.evaluate_rank(
-            #     distmat,
-            #     q_pids,
-            #     g_pids,
-            #     q_camids,
-            #     g_camids,
-            #     use_metric_cuhk03=use_metric_cuhk03
-            # )
+                print('Computing CMC and mAP ...')
+                cmc, mAP = metrics.evaluate_rank(
+                    distmat,
+                    q_pids,
+                    g_pids,
+                    q_camids,
+                    g_camids,
+                    use_metric_cuhk03=use_metric_cuhk03
+                )
 
-            # print('** Results **')
-            # print('mAP: {:.1%}'.format(mAP))
-            # print('CMC curve')
-            # for r in ranks:
-            #     print('Rank-{:<3}: {:.1%}'.format(r, cmc[r-1]))
+                print('** Results **')
+                print('mAP: {:.1%}'.format(mAP))
+                print('CMC curve')
+                for r in ranks:
+                    print('Rank-{:<3}: {:.1%}'.format(r, cmc[r-1]))
 
-            # # write to Tensorboard and comet.ml
-            # if not self.test_only:
-            #     rs = {'eval-rank-{:<3}'.format(r):cmc[r-1] for r in ranks}
-            #     self.writer.add_scalars('eval/ranks',rs,epoch)
-            #     self.experiment.log_metrics(rs,step=epoch)
-            #     self.writer.add_scalar('eval/mAP',mAP,epoch)
-            #     self.experiment.log_metric('eval-mAP',mAP,step=epoch)
-            #     print('Results written to tensorboard and comet.ml.')
+                # write to Tensorboard and comet.ml
+                if not self.test_only:
+                    rs = {'eval-rank-{:<3}'.format(r):cmc[r-1] for r in ranks}
+                    self.writer.add_scalars('eval/ranks',rs,epoch)
+                    self.experiment.log_metrics(rs,step=epoch)
+                    self.writer.add_scalar('eval/mAP',mAP,epoch)
+                    self.experiment.log_metric('eval-mAP',mAP,step=epoch)
+                    print('Results written to tensorboard and comet.ml.')
 
             if visrank:
                 visualize_ranked_results(
@@ -365,7 +371,9 @@ class Engine(object):
                         save_dir=osp.join(save_dir, 'viscam-'+str(epoch+1), dataset_name),
                         num=viscam_num
                     )
-
+                    
+        if viscam_only:
+            raise RuntimeError('Stop exec because `viscam_only` is set to true.')
 
         return cmc[0]
 
