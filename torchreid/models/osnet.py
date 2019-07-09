@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import division
 
-__all__ = ['osnet_x1_0', 'osnet_x0_75', 'osnet_x0_5', 'osnet_x0_25', 'osnet_ibn_x1_0']
+__all__ = ['osnet_x1_0', 'osnet_x0_75', 'osnet_x0_5', 'osnet_x0_25', 'osnet_ibn_x1_0', 'osnet_custom']
 
 import torch
 from torch import nn
@@ -313,6 +313,11 @@ class OSNet(nn.Module):
 ##########
 # Instantiation
 ##########
+def osnet_custom(num_classes=1000, loss='softmax', **kwargs):
+    # custom osnet
+    return OSNet(num_classes, blocks=[OSBlock, OSBlock, OSBlock], layers=[2, 2, 2],
+                 channels=[64, 256, 384, 512], feature_dim=1024, loss=loss, **kwargs)
+
 def osnet_x1_0(num_classes=1000, loss='softmax', **kwargs):
     # standard size (width x1.0)
     return OSNet(num_classes, blocks=[OSBlock, OSBlock, OSBlock], layers=[2, 2, 2],
