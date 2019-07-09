@@ -126,6 +126,7 @@ class ImageTripletEngine(engine.Engine):
 
             # write to Tensorboard & comet.ml
 
+            '''
             self.writer.add_scalars('optim/accs',accs.val,global_step)
             self.experiment.log_metric('optim/accs',accs.val,step=global_step)
 
@@ -138,6 +139,7 @@ class ImageTripletEngine(engine.Engine):
 
             self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
             self.experiment.log_metric('optim/lr',self.optimizer.param_groups[0]['lr'],step=global_step)
+            '''
 
             if (batch_idx+1) % print_freq == 0:
                 # estimate remaining time

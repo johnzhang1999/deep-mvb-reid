@@ -45,7 +45,7 @@ class Engine(object):
         if not isinstance(self.model, nn.Module):
             raise TypeError('model must be an instance of nn.Module')
 
-    def run(self, save_dir='log', max_epoch=0, start_epoch=0, fixbase_epoch=0, open_layers=None,
+    def run(self, arch, save_dir='log', max_epoch=0, start_epoch=0, fixbase_epoch=0, open_layers=None,
             start_eval=0, eval_freq=-1, test_only=False, print_freq=10,
             dist_metric='euclidean', normalize_feature=False, visrank=False, visrank_topk=20,
             use_metric_cuhk03=False, ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10):
@@ -98,6 +98,7 @@ class Engine(object):
 
         if test_only:
             self.test(
+                arch,
                 0,
                 testloader,
                 dist_metric=dist_metric,
@@ -183,7 +184,7 @@ class Engine(object):
         """
         raise NotImplementedError
 
-    def test(self, epoch, testloader, dist_metric='euclidean', normalize_feature=False,
+    def test(self, arch, epoch, testloader, dist_metric='euclidean', normalize_feature=False,
              visrank=False, visrank_topk=20, save_dir='', use_metric_cuhk03=False,
              ranks=[1, 5, 10, 20], rerank=False, viscam=False, viscam_num=10):
         r"""Tests model on target datasets.
@@ -227,6 +228,7 @@ class Engine(object):
             queryloader = testloader[name]['query']
             galleryloader = testloader[name]['gallery']
             rank1 = self._evaluate(
+                arch,
                 epoch,
                 dataset_name=name,
                 queryloader=queryloader,
@@ -246,7 +248,7 @@ class Engine(object):
         return rank1
 
     @torch.no_grad()
-    def _evaluate(self, epoch, dataset_name='', queryloader=None, galleryloader=None,
+    def _evaluate(self, arch, epoch, dataset_name='', queryloader=None, galleryloader=None,
                   dist_metric='euclidean', normalize_feature=False, visrank=False,
                   visrank_topk=20, save_dir='', use_metric_cuhk03=False, ranks=[1, 5, 10, 20],
                   rerank=False, viscam=False, viscam_num=10):
@@ -343,13 +345,24 @@ class Engine(object):
                 )
 
             if viscam:
-                visualize_cam(
-                    model=self.model, 
-                    finalconv='conv5', # for OSNet
-                    dataset=self.datamanager.return_testdataset_by_name(dataset_name),
-                    save_dir=osp.join(save_dir, 'viscam-'+str(epoch+1), dataset_name),
-                    num=viscam_num
-                )
+                if arch == 'osnet_x1_0':
+                    # print(self.model)
+                    visualize_cam(
+                        model=self.model,
+                        finalconv='conv5',  # for OSNet
+                        dataset=self.datamanager.return_testdataset_by_name(dataset_name),
+                        save_dir=osp.join(save_dir, 'viscam-'+str(epoch+1), dataset_name),
+                        num=viscam_num
+                    )
+                elif arch == 'resnext50_32x4d':
+                    # print(self.model)
+                    visualize_cam(
+                        model=self.model,
+                        finalconv='layer4',  # for resnext50
+                        dataset=self.datamanager.return_testdataset_by_name(dataset_name),
+                        save_dir=osp.join(save_dir, 'viscam-'+str(epoch+1), dataset_name),
+                        num=viscam_num
+                    )
 
 
         return cmc[0]

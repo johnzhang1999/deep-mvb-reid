@@ -273,6 +273,7 @@ def lr_scheduler_kwargs(parsed_args):
 
 def engine_run_kwargs(parsed_args):
     return {
+        'arch': parsed_args.arch,
         'save_dir': parsed_args.save_dir,
         'max_epoch': parsed_args.max_epoch,
         'start_epoch': parsed_args.start_epoch,
