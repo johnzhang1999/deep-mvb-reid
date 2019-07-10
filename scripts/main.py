@@ -151,12 +151,15 @@ def main():
 
     if args.resume and check_isfile(args.resume):
         args.start_epoch = resume_from_checkpoint(args.resume, model, scheduler=scheduler, optimizer=optimizer)
-    
+
     # lr changing is BUG-gy!
     if args.lr != optimizer.param_groups[0]['lr']:
         old_lr = optimizer.param_groups[0]['lr']
         change_lr_to(optimizer,args.lr)
         print('Changed optimzer lr from {} to {}.'.format(old_lr,args.lr))
+
+    # NOTE: not resuming scheduler
+    scheduler = torchreid.optim.build_lr_scheduler(optimizer, **lr_scheduler_kwargs(args))
 
     print('Building {}-engine for {}-reid'.format(args.loss, args.app))
     engine = build_engine(args, datamanager, model, optimizer, scheduler, experiment)
