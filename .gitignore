@@ -140,3 +140,5 @@ debug.py
 .Spotlight-V100
 .Trashes
 ._*
+
+.vscode/
