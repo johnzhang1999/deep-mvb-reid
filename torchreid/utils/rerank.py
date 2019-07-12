@@ -26,7 +26,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-__all__ = ['re_ranking', 'distmat_by_id']
+__all__ = ['re_ranking']
 
 import numpy as np
 
@@ -98,24 +98,3 @@ def re_ranking(q_g_dist, q_q_dist, g_g_dist, k1=20, k2=6, lambda_value=0.3):
     del jaccard_dist
     final_dist = final_dist[:query_num,query_num:]
     return final_dist
-
-def distmat_by_id(distmat, g_id, by_id):
-    """
-    transforms distance matrix to 
-    """
-    if by_id is None:
-        return distmat
-    elif by_id == "mean":
-        unique_ids = set(g_id)
-        gid_distmat = np.empty((distmat.shape[0], len(unique_ids)))
-        for i, bag_id in enumerate(unique_ids):
-            gid_distmat[:, i] = np.mean(distmat[:, np.asarray(g_id) == bag_id], axis=-1)
-        return gid_distmat
-    elif by_id == "self_attention":
-        # TODO: self attention
-        return distmat
-    elif by_id == "multi_head_attention":
-        # TODO: multi-headed attention
-        return distmat
-    else:
-        raise ValueError('Must be valid by_id method')

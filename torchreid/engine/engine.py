@@ -13,7 +13,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 import torchreid
-from torchreid.utils import AverageMeter, visualize_ranked_results, visualize_cam, save_checkpoint, re_ranking, distmat_by_id
+from torchreid.utils import AverageMeter, visualize_ranked_results, visualize_cam, save_checkpoint, re_ranking, combine_by_id
 from torchreid.losses import DeepSupervision
 from torchreid import metrics
 
@@ -32,7 +32,7 @@ class Engine(object):
         use_cpu (bool, optional): use cpu. Default is False.
     """
 
-    def __init__(self, datamanager, model, optimizer=None, scheduler=None, use_cpu=False, experiment=None, by_id="mean"):
+    def __init__(self, datamanager, model, optimizer=None, scheduler=None, use_cpu=False, experiment=None, combine_method="mean"):
         self.datamanager = datamanager
         self.model = model
         self.optimizer = optimizer
@@ -40,7 +40,7 @@ class Engine(object):
         self.use_gpu = (torch.cuda.is_available() and not use_cpu)
         self.writer = None
         self.experiment = experiment
-        self.by_id = by_id
+        self.combine_method = combine_method
 
         # check attributes
         if not isinstance(self.model, nn.Module):
@@ -301,6 +301,7 @@ class Engine(object):
                 gf = torch.cat(gf, 0)
                 g_pids = np.asarray(g_pids)
                 g_camids = np.asarray(g_camids)
+                gf, g_pids = combine_by_id(gf, g_pids, self.combine_method)
                 print('Done, obtained {}-by-{} matrix'.format(gf.size(0), gf.size(1)))
 
                 print('Speed: {:.4f} sec/batch'.format(batch_time.avg))
@@ -312,7 +313,7 @@ class Engine(object):
 
                 print('Computing distance matrix with metric={} ...'.format(dist_metric))
                 distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
-                distmat = distmat_by_id(distmat.numpy(), g_pids, self.by_id)
+                distmat = distmat.numpy()
 
                 if rerank:
                     print('Applying person re-ranking ...')
