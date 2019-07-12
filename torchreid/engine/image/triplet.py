@@ -126,20 +126,18 @@ class ImageTripletEngine(engine.Engine):
 
             # write to Tensorboard & comet.ml
 
-            '''
-            self.writer.add_scalars('optim/accs',accs.val,global_step)
+            #self.writer.add_scalars('optim/accs',accs.val,global_step)
             self.experiment.log_metric('optim/accs',accs.val,step=global_step)
 
-            self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
+            #self.writer.add_scalar('optim/loss',losses.val,global_step) # loss, loss.item() or losses.val ??
             self.experiment.log_metric('optim/loss',losses.val,step=global_step) 
-            self.writer.add_scalar('optim/loss_triplet',losses_t.val,global_step) 
+            #self.writer.add_scalar('optim/loss_triplet',losses_t.val,global_step) 
             self.experiment.log_metric('optim/loss_triplet',losses_t.val,step=global_step)
-            self.writer.add_scalar('optim/loss_softmax',losses_x.val,global_step) 
+            #self.writer.add_scalar('optim/loss_softmax',losses_x.val,global_step) 
             self.experiment.log_metric('optim/loss_softmax',losses_x.val,step=global_step)
 
-            self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
+            #self.writer.add_scalar('optim/lr',self.optimizer.param_groups[0]['lr'],global_step)
             self.experiment.log_metric('optim/lr',self.optimizer.param_groups[0]['lr'],step=global_step)
-            '''
 
             if (batch_idx+1) % print_freq == 0:
                 # estimate remaining time
