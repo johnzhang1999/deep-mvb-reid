@@ -1,13 +1,16 @@
 import numpy as np
+import torch
 __all__ = ['combine_by_id']
 
 def combine_by_id(gf, g_pids, method):
     """
     transforms features of same bag to a bag embedding
     """
-    if method is None:
+    if method == "none":
+        print("Does not combine by id")
         return gf, g_pids
     elif method == "mean":
+        print("Calculating mean by id ...")
         gf = gf.numpy()
         unique_ids = set(g_pids)
         new_g_pids = []
@@ -17,6 +20,7 @@ def combine_by_id(gf, g_pids, method):
             new_g_pids.append(gid)
         gf = torch.tensor(gf_by_id, dtype=torch.float)
         g_pids = np.array(new_g_pids)
+        return gf, g_pids
     elif method == "self_attention":
         # TODO: self attention
         return distmat
@@ -24,4 +28,4 @@ def combine_by_id(gf, g_pids, method):
         # TODO: multi-headed attention
         return distmat
     else:
-        raise ValueError('Must be valid by_id method')
+        raise ValueError('Must be valid combine-method')
