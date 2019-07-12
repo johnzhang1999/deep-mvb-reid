@@ -32,7 +32,7 @@ class Engine(object):
         use_cpu (bool, optional): use cpu. Default is False.
     """
 
-    def __init__(self, datamanager, model, optimizer=None, scheduler=None, use_cpu=False, experiment=None):
+    def __init__(self, datamanager, model, optimizer=None, scheduler=None, use_cpu=False, experiment=None, by_id="mean"):
         self.datamanager = datamanager
         self.model = model
         self.optimizer = optimizer
@@ -40,6 +40,7 @@ class Engine(object):
         self.use_gpu = (torch.cuda.is_available() and not use_cpu)
         self.writer = None
         self.experiment = experiment
+        self.by_id = by_id
 
         # check attributes
         if not isinstance(self.model, nn.Module):
@@ -311,7 +312,7 @@ class Engine(object):
 
                 print('Computing distance matrix with metric={} ...'.format(dist_metric))
                 distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
-                distmat = distmat.numpy()
+                distmat = distmat_by_id(distmat.numpy(), q_pids, g_pids, self.by_id)
 
                 if rerank:
                     print('Applying person re-ranking ...')
