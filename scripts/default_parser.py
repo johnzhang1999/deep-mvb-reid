@@ -168,6 +168,8 @@ def init_parser():
                         help='cmc ranks')
     parser.add_argument('--rerank', action='store_true',
                         help='use person re-ranking (by Zhong et al. CVPR2017)')
+    parser.add_argument('--combine-method', type=str, default='none', choices=["none", "mean"],
+                        help='use combine method of [none | mean]')
 
     parser.add_argument('--visrank', action='store_true',
                         help='visualize ranked results, only available in evaluation mode')
