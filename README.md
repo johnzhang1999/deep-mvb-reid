@@ -1,10 +1,12 @@
 # Torchreid MVB Fork Documentation
+
 The MVB fork adds additional functionalities for re-ID research, experimentation, and visualization in addition to the Pytorch library Torchreid. It also contains a built-in interface for NUCTECH's Multi-View Baggage (MVB) dataset.
 
 #### Notice
 The MVB fork is still in active development so bugs and errors should be expected.
 
 ##Installation
+
 ```shell
 $ cd deep-person-reid/
 # yet to be updated...
@@ -13,6 +15,7 @@ $ python setup.py develop
 ```
 
 ## MVB Dataset Preparation
+
 The current setup assumes some root data folder `$DATA` with the structure:
 
 ``` shell
@@ -33,6 +36,7 @@ where `sa_{gallery,query,train}.csv` contain information about the gallery, quer
 The MVB data loader is located at `torchreid/data/datasets/image/mvb.py`.
 
 ## Usage
+
 We suggest that you use the unified interface located at `scripts/main.py` to train your models. 
 
 We provide some common flags that you'll probably often use here. For a full documentation of the interface, go to `scripts/default_parser.py` for descriptions and default values.
@@ -68,13 +72,14 @@ A sample testing script is as below:
 python scripts/main.py --root ../../data --app image --loss softmax --label-smooth -s mvb -a osnet_x1_0 --height 256 --width 256 --batch-size 36 --load-weights log/osnet_x1_0-softmax/model.pth.tar-70 --evaluate --save-dir log/osnet_x1_0-softmax --use-avai-gpus --no-comet --rerank --viscam --viscam-num 20
 ```
 
-
 ###Logging
+
 * Plain text log files (stdout) are stored in `$LOGDIR`.
 * Tensorboard events are written to `scripts/runs/<stem($LOGDIR)>`.
 * Metrics, hyperparameters, system metrics, stdout, cli flags, etc. are logged to Comet.ml unless `--no-comet` is set. Comet.ml config can be changed in `scripts/main.py`.
 
 ## Fork Contributor
+
 Tianyu (John) Zhang @ NUCTECH, Bo (Hiroshi) Wu, Yicong (Michael) Mao
 
 
