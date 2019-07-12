@@ -5,7 +5,7 @@ The MVB fork adds additional functionalities for re-ID research, experimentation
 #### Notice
 The MVB fork is still in active development so bugs and errors should be expected.
 
-##Installation
+## Installation
 
 ```shell
 $ cd deep-person-reid/
@@ -72,7 +72,7 @@ A sample testing script is as below:
 python scripts/main.py --root ../../data --app image --loss softmax --label-smooth -s mvb -a osnet_x1_0 --height 256 --width 256 --batch-size 36 --load-weights log/osnet_x1_0-softmax/model.pth.tar-70 --evaluate --save-dir log/osnet_x1_0-softmax --use-avai-gpus --no-comet --rerank --viscam --viscam-num 20
 ```
 
-###Logging
+### Logging
 
 * Plain text log files (stdout) are stored in `$LOGDIR`.
 * Tensorboard events are written to `scripts/runs/<stem($LOGDIR)>`.
