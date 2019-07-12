@@ -53,6 +53,7 @@ def build_datamanager(args):
 def build_engine(args, datamanager, model, optimizer, scheduler, experiment=experiment):
     if args.app == 'image':
         if args.loss == 'softmax':
+            print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
             engine = torchreid.engine.ImageSoftmaxEngine(
                 datamanager,
                 model,
@@ -61,7 +62,7 @@ def build_engine(args, datamanager, model, optimizer, scheduler, experiment=expe
                 use_cpu=args.use_cpu,
                 label_smooth=args.label_smooth,
                 experiment=experiment,
-                by_id="mean"
+                by_id=None
             )
         else:
             engine = torchreid.engine.ImageTripletEngine(

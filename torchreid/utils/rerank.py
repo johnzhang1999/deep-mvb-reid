@@ -103,13 +103,13 @@ def distmat_by_id(distmat, g_id, by_id):
     """
     transforms distance matrix to 
     """
-    if by_id == None:
+    if by_id is None:
         return distmat
     elif by_id == "mean":
         unique_ids = set(g_id)
         gid_distmat = np.empty((distmat.shape[0], len(unique_ids)))
-        for bag_id, i in enumerate(unique_ids):
-            gid_distmat[:, i] = np.mean(distmat[:, np.asarray(g_id) == bag_id], axis=-1, keepdims=True)
+        for i, bag_id in enumerate(unique_ids):
+            gid_distmat[:, i] = np.mean(distmat[:, np.asarray(g_id) == bag_id], axis=-1)
         return gid_distmat
     elif by_id == "self_attention":
         # TODO: self attention
