@@ -7,10 +7,13 @@ The MVB fork is still in active development so bugs and errors should be expecte
 
 ## Installation
 
+You must be on Linux to install. 
+
 ```shell
 $ cd deep-person-reid/
 # yet to be updated...
-$ pip install -r requirements.txt  
+$ pip install -r requirements.txt  # with pip
+$ conda create -f environment.yml  # with conda
 $ python setup.py develop
 ```
 

@@ -1,4 +1,4 @@
-name: torchreid
+name: mvbreid
 dependencies:
 - python=3.7
 - numpy
@@ -7,3 +7,7 @@ dependencies:
 - Pillow
 - six
 - scipy
+- pip
+- gcc_linux-64
+- pip:
+  - comet_ml
