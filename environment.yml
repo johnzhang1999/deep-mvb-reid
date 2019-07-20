@@ -1,13 +1,22 @@
 name: mvbreid
+channels:
+  - pytorch
+  # - conda-forge
 dependencies:
-- python=3.7
+- python>3.7
 - numpy
 - Cython
+- matplotlib
+- tensorboardX
+- opencv
 - h5py
 - Pillow
 - six
 - scipy
 - pip
 - gcc_linux-64
+- pytorch
+- torchvision
+- cudatoolkit=10.0
 - pip:
   - comet_ml

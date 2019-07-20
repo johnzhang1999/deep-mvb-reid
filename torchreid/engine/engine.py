@@ -13,7 +13,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 import torchreid
-from torchreid.utils import AverageMeter, visualize_ranked_results, visualize_cam, save_checkpoint, re_ranking, combine_by_id
+from torchreid.utils import AverageMeter, visualize_ranked_results, visualize_cam, save_checkpoint, re_ranking, CombineMultipleImages
 from torchreid.losses import DeepSupervision
 from torchreid import metrics
 
@@ -32,7 +32,8 @@ class Engine(object):
         use_cpu (bool, optional): use cpu. Default is False.
     """
 
-    def __init__(self, datamanager, model, optimizer=None, scheduler=None, use_cpu=False, experiment=None, combine_method="mean"):
+    def __init__(self, datamanager, model, optimizer=None, scheduler=None, use_cpu=False,
+                 experiment=None, combine_method="mean", save_embed=None):
         self.datamanager = datamanager
         self.model = model
         self.optimizer = optimizer
@@ -41,6 +42,7 @@ class Engine(object):
         self.writer = None
         self.experiment = experiment
         self.combine_method = combine_method
+        self.save_embed = save_embed
 
         # check attributes
         if not isinstance(self.model, nn.Module):
@@ -83,6 +85,9 @@ class Engine(object):
                 Default is False. This is only enabled when test_only=True.
         """
         trainloader, testloader = self.datamanager.return_dataloaders()
+        gallery_cam_num = 3
+        self.combine_fn = CombineMultipleImages(self.combine_method, self.model.module.feature_dim,
+                                                gallery_cam_num, trainloader, self.model)
 
         self.test_only = test_only
         if not test_only:
@@ -263,6 +268,7 @@ class Engine(object):
         with self.experiment.test():
             if not viscam_only:
                 batch_time = AverageMeter()
+                combine_time = AverageMeter()
 
                 self.model.eval()
 
@@ -274,7 +280,7 @@ class Engine(object):
                         imgs = imgs.cuda()
                     end = time.time()
                     features = self._extract_features(imgs)
-                    batch_time.update(time.time() - end)
+                    batch_time.update(time.time() - end, len(pids), True)
                     features = features.data.cpu()
                     qf.append(features)
                     q_pids.extend(pids)
@@ -293,7 +299,7 @@ class Engine(object):
                         imgs = imgs.cuda()
                     end = time.time()
                     features = self._extract_features(imgs)
-                    batch_time.update(time.time() - end)
+                    batch_time.update(time.time() - end, len(pids), True)
                     features = features.data.cpu()
                     gf.append(features)
                     g_pids.extend(pids)
@@ -302,20 +308,21 @@ class Engine(object):
                 g_pids = np.asarray(g_pids)
                 g_camids = np.asarray(g_camids)
 
-                # gf = gf.numpy()
-                # unique_ids = set(g_pids)
-                # new_g_pids = []
-                # gf_by_id = np.empty((len(unique_ids), gf.shape[-1]))
-                # for i, gid in enumerate(unique_ids):
-                #     gf_by_id[i] = np.mean(gf[np.asarray(g_pids) == gid], axis=0)
-                #     new_g_pids.append(gid)
-                # gf = torch.tensor(gf_by_id, dtype=torch.float)
-                # g_pids = np.array(new_g_pids)
-
-                gf, g_pids = combine_by_id(gf, g_pids, self.combine_method)
+                end = time.time()
+                num_images = len(g_pids)
+                self.combine_fn.train()
+                gf, g_pids = self.combine_fn(gf, g_pids, g_camids)
+                if self.save_embed:
+                    assert osp.isdir(self.save_embed)
+                    path = osp.realpath(self.save_embed)
+                    np.save(path + '/gf-' + self.combine_method + '.npy', gf)
+                    np.save(path + '/g_pids-' + self.combine_method + '.npy', g_pids)
+                combine_time.update(time.time() - end, num_images, True)
+                time.time() - end
+                gf = torch.tensor(gf, dtype=torch.float)
                 print('Done, obtained {}-by-{} matrix'.format(gf.size(0), gf.size(1)))
 
-                print('Speed: {:.4f} sec/batch'.format(batch_time.avg))
+                print('Speed: {:.4f} sec/image'.format(batch_time.avg + combine_time.avg))
 
                 if normalize_feature:
                     print('Normalzing features with L2 norm ...')

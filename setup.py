@@ -5,7 +5,7 @@ import numpy as np
 
 
 def readme():
-    with open('README.rst') as f:
+    with open('README.md') as f:
         content = f.read()
     return content
 

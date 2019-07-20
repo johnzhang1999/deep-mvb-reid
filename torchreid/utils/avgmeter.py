@@ -22,8 +22,11 @@ class AverageMeter(object):
         self.sum = 0
         self.count = 0
 
-    def update(self, val, n=1):
+    def update(self, val, n=1, individual=False):
         self.val = val
-        self.sum += val * n
+        if individual:
+            self.sum += val * n
+        else:
+            self.sum += val
         self.count += n
         self.avg = self.sum / self.count

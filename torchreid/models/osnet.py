@@ -210,6 +210,7 @@ class OSNet(nn.Module):
         assert num_blocks == len(layers)
         assert num_blocks == len(channels) - 1 
         self.loss = loss
+        self.feature_dim = feature_dim
         
         # convolutional backbone
         self.conv1 = ConvLayer(3, channels[0], 7, stride=2, padding=3, IN=IN)

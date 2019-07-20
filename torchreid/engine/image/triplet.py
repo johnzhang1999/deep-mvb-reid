@@ -70,8 +70,8 @@ class ImageTripletEngine(engine.Engine):
 
     def __init__(self, datamanager, model, optimizer, margin=0.3,
                  weight_t=1, weight_x=1, scheduler=None, use_cpu=False,
-                 label_smooth=True, experiment=None, combine_method="mean"):
-        super(ImageTripletEngine, self).__init__(datamanager, model, optimizer, scheduler, use_cpu, experiment, combine_method)
+                 label_smooth=True, experiment=None, combine_method="mean", save_embed=None):
+        super(ImageTripletEngine, self).__init__(datamanager, model, optimizer, scheduler, use_cpu, experiment, combine_method, save_embed)
 
         self.weight_t = weight_t
         self.weight_x = weight_x

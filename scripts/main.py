@@ -61,7 +61,8 @@ def build_engine(args, datamanager, model, optimizer, scheduler, experiment=expe
                 use_cpu=args.use_cpu,
                 label_smooth=args.label_smooth,
                 experiment=experiment,
-                combine_method=args.combine_method
+                combine_method=args.combine_method,
+                save_embed=args.save_embed
             )
         else:
             engine = torchreid.engine.ImageTripletEngine(
@@ -75,7 +76,8 @@ def build_engine(args, datamanager, model, optimizer, scheduler, experiment=expe
                 use_cpu=args.use_cpu,
                 label_smooth=args.label_smooth,
                 experiment=experiment,
-                combine_method=args.combine_method
+                combine_method=args.combine_method,
+                save_embed=args.save_embed
             )
     
     else:

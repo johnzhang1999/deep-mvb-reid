@@ -168,8 +168,6 @@ def init_parser():
                         help='cmc ranks')
     parser.add_argument('--rerank', action='store_true',
                         help='use person re-ranking (by Zhong et al. CVPR2017)')
-    parser.add_argument('--combine-method', type=str, default='none', choices=["none", "mean"],
-                        help='use combine method of [none | mean]')
 
     parser.add_argument('--visrank', action='store_true',
                         help='visualize ranked results, only available in evaluation mode')
@@ -181,6 +179,11 @@ def init_parser():
                         help='visualize k CAMs')
     parser.add_argument('--viscam-only', action='store_true',
                         help='no CMC or mAP calculation, for debugging')
+    parser.add_argument('--combine-method', type=str, default='none',
+                        choices=["none", "mean", "feed_forward", "self_attention"],
+                        help='which combine method to use')
+    parser.add_argument('--save-embed', type=str, 
+                        help='location to save combined embeddings and pids')
     
     # ************************************************************
     # Miscs
